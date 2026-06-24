@@ -18,6 +18,7 @@
     --fic-bg: #F2D9DC; --fic-ink: #6B1F2A; --fic-sub: #A14C5A;
     --mus-bg: #F4DCC8; --mus-ink: #7A3B1A; --mus-sub: #B26A3C;
     --neu-bg: #DDD2BD; --neu-ink: #5A5042; --neu-sub: #8A7D68;
+    --chord-ink: #A14C5A;
   }
   * { box-sizing: border-box; }
   html, body {
@@ -99,7 +100,17 @@
     cursor: pointer; padding: 0;
   }
   .shape-color-swatch.selected, .container-color-swatch.selected { border-color: var(--ink-neutral); }
-  #stack-menu-shape-types { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 2px 4px 10px; }
+  #stack-menu-fill-style { display: flex; flex-direction: column; gap: 2px; padding: 4px 6px 8px; }
+  #stack-menu-fill-style.hidden { display: none; }
+  .shape-fill-btn {
+    display: flex; align-items: center; gap: 8px; width: 100%;
+    background: none; border: none; cursor: pointer; padding: 5px 6px; border-radius: 6px;
+    font-family: "Inter", sans-serif; font-size: 12px; color: var(--ink-neutral);
+    text-align: left; transition: background 0.1s;
+  }
+  .shape-fill-btn:hover { background: rgba(61,51,42,0.07); }
+  .shape-fill-btn.selected { background: rgba(61,51,42,0.1); font-weight: 600; }
+  .shape-fill-btn svg { width: 32px; height: 18px; flex-shrink: 0; color: var(--ink-neutral); }
   #stack-menu-shape-types.hidden { display: none; }
   .shape-type-mini-btn {
     background: var(--canvas-bg); border: 1.5px solid transparent; border-radius: 6px;
@@ -129,9 +140,30 @@
     pointer-events: auto;
     display: flex;
     flex-direction: column;
-    transition: left 0.22s ease, top 0.22s ease, width 0.22s ease, height 0.22s ease;
+    transition: left 0.22s ease, top 0.22s ease, width 0.22s ease, height 0.22s ease,
+                transform 0.2s ease, box-shadow 0.2s ease;
   }
   .card:active { cursor: grabbing; }
+  .card.is-dragging {
+    transform: scale(1.04) rotate(1deg);
+    box-shadow: 0 12px 32px rgba(61,51,42,0.28), 0 0 0 0.5px rgba(0,0,0,0.1);
+    z-index: 20;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .card.just-landed {
+    animation: card-land 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+  .card.just-joined-stack {
+    animation: card-pop-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+  @keyframes card-land {
+    from { transform: scale(1.04) rotate(1deg); }
+    to   { transform: scale(1) rotate(0deg); }
+  }
+  @keyframes card-pop-in {
+    from { transform: scale(0.88); opacity: 0.5; }
+    to   { transform: scale(1); opacity: 1; }
+  }
   .card-header { padding: 10px 12px 6px; flex-shrink: 0; background: var(--neu-bg); }
   .card-body {
     padding: 0 12px 10px; flex: 1; min-height: 0; background: var(--card-paper);
@@ -143,6 +175,21 @@
   .card-preview-heading { font-family: "Lora", serif; font-weight: 600; font-size: 12.5px; opacity: 1; margin-top: 4px; }
   .card-preview-heading:first-child { margin-top: 0; }
   .card-preview-line:empty { height: 6px; }
+  .card-song-pill {
+    display: flex; align-items: center; gap: 7px;
+    background: rgba(161,76,90,0.08); border-radius: 8px;
+    padding: 6px 10px; margin-top: 6px;
+  }
+  .card-song-pill svg { width: 14px; height: 14px; color: #A14C5A; flex-shrink: 0; }
+  .card-song-pill-text { display: flex; flex-direction: column; min-width: 0; }
+  .card-song-pill-title {
+    font-family: "Lora", serif; font-weight: 600; font-size: 12px;
+    color: #A14C5A; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .card-song-pill-artist {
+    font-family: "Inter", sans-serif; font-size: 10px;
+    color: var(--ink-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
   .card-property-badges { display: flex; flex-wrap: wrap; gap: 4px; padding-top: 8px; flex-shrink: 0; }
   .card-property-badge {
     font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: 999px;
@@ -169,6 +216,121 @@
     transition: left 0.22s ease, top 0.22s ease, width 0.22s ease, height 0.22s ease;
   }
   .img-item img { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; display: block; pointer-events: none; }
+
+  /* ---- Video item (board) ---- */
+  .video-item {
+    position: absolute; border-radius: 10px; overflow: hidden;
+    box-shadow: 0 4px 16px rgba(61,51,42,0.28), 0 0 0 0.5px rgba(0,0,0,0.1);
+    cursor: grab; touch-action: none; pointer-events: auto; display: flex; flex-direction: column;
+    transition: left 0.22s ease, top 0.22s ease, width 0.22s ease, height 0.22s ease;
+    background: #1a1410;
+  }
+  .video-item.is-dragging { cursor: grabbing; }
+  .video-item-toolbar {
+    display: flex; align-items: center; gap: 8px; padding: 6px 10px;
+    background: rgba(26,20,16,0.95); flex-shrink: 0; min-height: 32px;
+  }
+  .video-item-title {
+    flex: 1; min-width: 0; font-family: "Inter", sans-serif; font-size: 11px;
+    color: rgba(251,248,240,0.75); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .video-item-btn {
+    background: none; border: none; cursor: pointer; padding: 3px;
+    color: rgba(251,248,240,0.45); display: flex; align-items: center; justify-content: center;
+    border-radius: 4px; flex-shrink: 0; transition: color 0.12s, background 0.12s;
+  }
+  .video-item-btn:hover { color: rgba(251,248,240,0.9); background: rgba(255,255,255,0.08); }
+  .video-item-btn.danger:hover { color: #E07A7A; }
+  .video-item-btn svg { width: 13px; height: 13px; }
+  .video-item-embed {
+    flex: 1; position: relative; cursor: pointer; overflow: hidden;
+    background: #1a1410;
+  }
+  .video-item-thumb {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; display: block; transition: opacity 0.2s;
+  }
+  .video-item-play-overlay {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.25); transition: background 0.2s;
+  }
+  .video-item-embed:hover .video-item-play-overlay { background: rgba(0,0,0,0.1); }
+  .video-item-play-btn {
+    width: 64px; height: 44px; background: #FF0000; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+    transition: transform 0.15s, background 0.15s;
+  }
+  .video-item-embed:hover .video-item-play-btn { transform: scale(1.08); background: #cc0000; }
+  .video-item-play-btn svg { width: 22px; height: 22px; fill: white; margin-left: 3px; }
+  .video-item-drag-shield {
+    position: absolute; inset: 0; z-index: 2;
+    background: transparent; cursor: grab;
+  }
+  .video-item.is-dragging .video-item-drag-shield { cursor: grabbing; }
+  .video-item.selected { outline: 2px solid #4A90E2; outline-offset: 2px; }
+  .video-embed-error {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 10px;
+    background: #1a1410; color: rgba(251,248,240,0.7);
+    font-family: "Inter", sans-serif; text-align: center; padding: 20px;
+  }
+  .video-embed-error svg { opacity: 0.4; }
+  .video-embed-error-title {
+    font-size: 13px; font-weight: 600; color: rgba(251,248,240,0.85);
+  }
+  .video-embed-error-sub {
+    font-size: 11px; color: rgba(251,248,240,0.45); margin-top: -4px;
+  }
+  .video-embed-error-link {
+    margin-top: 4px; display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 999px; padding: 7px 16px;
+    font-size: 12px; font-weight: 500; color: rgba(251,248,240,0.8);
+    text-decoration: none; transition: background 0.12s, color 0.12s;
+  }
+  .video-embed-error-link:hover { background: rgba(255,255,255,0.14); color: white; }
+  .video-embed-error-link svg { width: 12px; height: 12px; opacity: 0.7; }
+
+  /* Video card block */
+  .block-video { padding: 4px 0; }
+  .video-block-url-row {
+    display: flex; gap: 6px; align-items: center; margin-bottom: 8px;
+  }
+  .video-block-url-input {
+    flex: 1; border: 1px solid rgba(61,51,42,0.15); border-radius: 6px;
+    background: rgba(61,51,42,0.04); padding: 5px 8px; outline: none;
+    font-family: "Inter", sans-serif; font-size: 12px; color: var(--ink-neutral);
+    -webkit-user-select: text; user-select: text;
+  }
+  .video-block-url-input::placeholder { color: var(--ink-faint); }
+  .video-block-url-input:focus { border-color: rgba(61,51,42,0.35); }
+  .video-block-url-btn {
+    background: rgba(61,51,42,0.08); border: none; border-radius: 6px;
+    font-family: "Inter", sans-serif; font-size: 11px; color: var(--ink-neutral);
+    padding: 5px 10px; cursor: pointer; flex-shrink: 0; transition: background 0.12s;
+  }
+  .video-block-url-btn:hover { background: rgba(61,51,42,0.14); }
+  .video-block-embed {
+    position: relative; width: 100%; padding-bottom: 56.25%;
+    border-radius: 8px; overflow: hidden; background: #1a1410; cursor: pointer;
+  }
+  .video-block-embed img {
+    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+  }
+  .video-block-embed .video-item-play-overlay {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.25);
+  }
+  .video-block-embed:hover .video-item-play-overlay { background: rgba(0,0,0,0.1); }
+  .video-block-embed .video-item-play-btn {
+    width: 52px; height: 36px; background: #FF0000; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5); transition: transform 0.15s;
+  }
+  .video-block-embed:hover .video-item-play-btn { transform: scale(1.08); }
+  .video-block-embed .video-item-play-btn svg { width: 18px; height: 18px; fill: white; margin-left: 3px; }
+  /* ---- End video ---- */
   .shape-item {
     position: absolute; cursor: grab;
     touch-action: none; pointer-events: auto;
@@ -178,7 +340,7 @@
   .shape-fill {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     filter: drop-shadow(0 3px 5px rgba(61,51,42,0.28));
-    pointer-events: none;
+    pointer-events: none; box-sizing: border-box;
   }
   .container-box {
     position: absolute; border-radius: 10px; cursor: grab;
@@ -197,19 +359,51 @@
   .card.selected, .img-item.selected, .shape-item.selected, .card-group-frame.selected {
     outline: 2px solid #4A90E2; outline-offset: 2px;
   }
+  .group-resize-handle {
+    position: absolute; right: -5px; top: 50%; transform: translateY(-50%);
+    width: 10px; height: 32px; cursor: ew-resize;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 0.15s ease; z-index: 2;
+    color: var(--ink-faint); pointer-events: none;
+  }
+  .group-resize-handle svg { width: 8px; height: 16px; }
+  .card-group-frame.selected .group-resize-handle { opacity: 1; pointer-events: auto; }
+  .card-group-frame:hover .group-resize-handle { opacity: 0.5; pointer-events: auto; }
   .resize-handle {
     position: absolute; right: -5px; bottom: -5px; width: 16px; height: 16px;
     border-radius: 50%; background: var(--card-paper); box-shadow: 0 0 0 0.5px rgba(0,0,0,0.2);
     cursor: nwse-resize; display: flex; align-items: center; justify-content: center;
     color: var(--ink-faint);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.15s ease;
   }
   .resize-handle svg { width: 9px; height: 9px; transform: rotate(45deg); }
+  .selected .resize-handle,
+  .selected > .resize-handle { opacity: 1; pointer-events: auto; }
+
   .connect-handle {
     position: absolute; right: -6px; top: 50%; transform: translateY(-50%);
     width: 12px; height: 12px; border-radius: 50%;
     background: var(--card-paper); box-shadow: 0 0 0 0.5px rgba(0,0,0,0.25);
     cursor: crosshair;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.15s ease;
   }
+  .selected .connect-handle,
+  .selected > .connect-handle { opacity: 1; pointer-events: auto; }
+
+  .deform-handle {
+    position: absolute; left: -5px; top: -5px; width: 16px; height: 16px;
+    border-radius: 50%; background: #A14C5A; box-shadow: 0 0 0 0.5px rgba(0,0,0,0.2);
+    cursor: crosshair; display: flex; align-items: center; justify-content: center;
+    color: rgba(255,255,255,0.85);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.15s ease;
+    z-index: 2;
+  }
+  .deform-handle svg { width: 8px; height: 8px; }
+  .selected .deform-handle,
+  .selected > .deform-handle { opacity: 1; pointer-events: auto; }
 
   #toolbar {
     position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
@@ -274,6 +468,38 @@
   }
   #group-suggest-btn:hover { background: var(--canvas-bg); }
 
+  #stack-drop-chip {
+    position: fixed; transform: translate(-50%, -50%);
+    z-index: 50; display: flex; align-items: center; gap: 6px;
+    background: var(--card-paper);
+    border-radius: 999px; padding: 8px 16px 8px 12px;
+    box-shadow: 0 2px 12px rgba(61,51,42,0.22), 0 0 0 0.5px rgba(0,0,0,0.07);
+    font-family: "Inter", sans-serif; font-size: 12px; color: var(--ink-neutral);
+    pointer-events: none; opacity: 0; transition: opacity 0.15s ease;
+  }
+  #stack-drop-chip.visible { opacity: 1; pointer-events: auto; }
+  #stack-drop-chip svg { width: 14px; height: 14px; color: var(--neu-ink); flex-shrink: 0; }
+  #stack-drop-yes {
+    background: var(--neu-ink); color: var(--card-paper); border: none;
+    border-radius: 999px; font-family: "Inter", sans-serif; font-size: 12px;
+    padding: 5px 12px; cursor: pointer; margin-left: 4px;
+    transition: background 0.12s;
+  }
+  #stack-drop-yes:hover { background: var(--neu-sub); }
+  #stack-drop-no {
+    background: none; border: none; color: var(--ink-faint);
+    font-family: "Inter", sans-serif; font-size: 12px; cursor: pointer; padding: 4px 6px;
+  }
+  #stack-drop-no:hover { color: var(--ink-neutral); }
+  .card-group-frame.stack-drop-target { outline: 2px solid var(--neu-ink); outline-offset: 2px; }
+  .card-group-frame.stack-just-received {
+    animation: stack-receive 0.4s ease both;
+  }
+  @keyframes stack-receive {
+    0%   { box-shadow: 0 0 0 3px rgba(90,80,66,0.5); }
+    100% { box-shadow: none; }
+  }
+
   #group-create-popup {
     position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%);
     background: var(--card-paper); border-radius: 12px; padding: 14px;
@@ -309,6 +535,7 @@
     width: 380px; max-width: 88vw; background: var(--card-paper);
     border-radius: 14px; padding: 0; position: relative; overflow: hidden;
     display: flex; flex-direction: column;
+    max-height: 85vh;
   }
   #modal .resize-handle { right: 4px; bottom: 4px; }
   #modal-header {
@@ -316,6 +543,93 @@
     background: var(--neu-bg); transition: background 0.15s ease; flex-shrink: 0;
   }
   #modal-body { padding: 18px 26px 22px; flex: 1; display: flex; flex-direction: column; min-height: 0; }
+  #perf-overlay {
+    position: fixed; inset: 0; z-index: 100;
+    background: #E8E0D0;
+    display: flex; flex-direction: column;
+    visibility: hidden; opacity: 0;
+    transition: opacity 0.25s ease, visibility 0s linear 0.25s;
+  }
+  #perf-overlay.open {
+    visibility: visible; opacity: 1;
+    transition: opacity 0.25s ease, visibility 0s linear 0s;
+  }
+  #perf-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 28px 10px;
+    border-bottom: 1px solid rgba(61,51,42,0.15);
+    flex-shrink: 0; gap: 20px;
+    background: #E8E0D0;
+  }
+  #perf-header-left {
+    display: flex; align-items: center; gap: 20px; flex: 1; min-width: 0;
+  }
+  #perf-header-meta { flex-shrink: 0; }
+  #perf-diagrams {
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; flex: 1; min-width: 0;
+  }
+  #perf-close {
+    background: rgba(61,51,42,0.08); border: none; border-radius: 50%;
+    width: 28px; height: 28px; cursor: pointer;
+    color: #8A7D68; display: flex; align-items: center; justify-content: center;
+    transition: background 0.12s, color 0.12s; flex-shrink: 0;
+  }
+  #perf-close svg { width: 13px; height: 13px; }
+  #perf-close:hover { background: rgba(61,51,42,0.15); color: #3D332A; }
+
+  #perf-columns {
+    flex: 1; min-height: 0;
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px; overflow: hidden;
+    padding: 12px 24px 24px;
+    background: #E8E0D0;
+  }
+  .perf-col {
+    overflow-y: auto; padding: 20px 28px 40px;
+    background: #FBF8F0;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(61,51,42,0.15), 0 0 0 0.5px rgba(61,51,42,0.08);
+    scrollbar-width: thin; scrollbar-color: rgba(61,51,42,0.2) transparent;
+  }
+  .perf-col:first-child { border-right: none; }
+  .perf-col:nth-child(2) { border-right: none; }
+  .perf-col::-webkit-scrollbar { width: 4px; }
+  .perf-col::-webkit-scrollbar-thumb { background: rgba(61,51,42,0.2); border-radius: 2px; }
+
+  .perf-verse { margin-bottom: 16px; }
+  .perf-section-label {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+    color: #8A7D68; margin-bottom: 2px; margin-top: 2px;
+  }
+  .perf-pair { margin-bottom: 0; }
+  .perf-chord-line {
+    font-family: "Courier New", Courier, monospace; font-size: 15px; font-weight: 700;
+    color: #A14C5A; white-space: pre-wrap; line-height: 1.2; display: block;
+  }
+  .perf-lyric-line {
+    font-family: "Courier New", Courier, monospace; font-size: 14px;
+    color: #3D332A; line-height: 1.4;
+    white-space: pre-wrap; margin-bottom: 4px; display: block;
+  }
+  .perf-lyric-line:empty { margin-bottom: 4px; }
+  .perf-text-block {
+    font-family: "Inter", sans-serif; font-size: 11px;
+    color: #8A7D68; line-height: 1.5;
+    margin-bottom: 10px; white-space: pre-wrap;
+  }
+  /* Per-block perf button */
+  .song-perf-btn {
+    background: none; border: none; cursor: pointer; padding: 3px 6px;
+    color: #8A7D68; border-radius: 6px;
+    display: inline-flex; align-items: center; gap: 5px;
+    font-family: "Inter", sans-serif; font-size: 11px;
+    transition: background 0.12s, color 0.12s;
+    margin-bottom: 8px;
+  }
+  .song-perf-btn svg { width: 11px; height: 11px; flex-shrink: 0; }
+  .song-perf-btn:hover { background: rgba(161,76,90,0.1); color: #A14C5A; }
+  /* ---- End performance mode ---- */
+
   #modal-close {
     position: absolute; top: 14px; right: 16px; background: none; border: none;
     font-size: 18px; color: var(--ink-faint); cursor: pointer; line-height: 1;
@@ -368,6 +682,224 @@
   .card-thumb-mini { width: 36px; height: 36px; border-radius: 5px; object-fit: cover; box-shadow: 0 0 0 0.5px rgba(0,0,0,0.15); }
   .card-thumb-more { font-size: 10px; color: var(--ink-faint); }
 
+  /* ---- Block system ---- */
+  #blocks-container {
+    display: flex; flex-direction: column; gap: 2px;
+    flex: 1; min-height: 0; overflow-y: auto; padding-bottom: 8px;
+  }
+  .card-block {
+    position: relative; border-radius: 8px;
+    transition: background 0.12s ease;
+  }
+  .card-block:hover > .block-drag-handle { opacity: 1; }
+  .block-drag-handle {
+    position: absolute; left: -20px; top: 50%; transform: translateY(-50%);
+    width: 16px; height: 24px; opacity: 0; cursor: grab;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ink-faint); transition: opacity 0.12s ease;
+  }
+  .block-drag-handle:active { cursor: grabbing; }
+  .block-drag-handle svg { width: 10px; height: 10px; }
+  .card-block.drag-over-above { box-shadow: 0 -3px 0 #A14C5A; }
+  .card-block.drag-over-below { box-shadow: 0 3px 0 #A14C5A; }
+  .card-block.dragging { opacity: 0.35; }
+
+  /* Text block */
+  .block-text textarea {
+    width: 100%; border: none; background: transparent; outline: none; resize: none;
+    font-family: "Inter", sans-serif; font-size: 13px; color: var(--ink-neutral);
+    line-height: 1.6; min-height: 60px; padding: 6px 0;
+    -webkit-user-select: text; user-select: text;
+  }
+  .block-text textarea::placeholder { color: var(--ink-faint); }
+
+  /* Image block */
+  .block-image { padding: 4px 0; }
+  .block-image-gallery { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-start; }
+  .block-image-add {
+    width: 72px; height: 72px; border-radius: 6px; border: 1.5px dashed rgba(61,51,42,0.25);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: var(--ink-faint); background: transparent;
+    transition: border-color 0.12s, color 0.12s;
+  }
+  .block-image-add:hover { border-color: var(--ink-neutral); color: var(--ink-neutral); }
+  .block-image-add svg { width: 18px; height: 18px; }
+
+  /* Song block */
+  .block-song { padding: 4px 0; }
+  .song-block-inner { position: relative; }
+  .song-meta { margin-bottom: 10px; }
+  .song-title-input {
+    display: block; width: 100%; border: none; background: transparent; outline: none;
+    font-family: "Lora", serif; font-weight: 600; font-size: 15px; color: var(--ink-neutral);
+    padding: 0; margin-bottom: 2px;
+    -webkit-user-select: text; user-select: text;
+  }
+  .song-title-input::placeholder { color: var(--ink-faint); font-weight: 400; }
+  .song-artist-input {
+    display: block; width: 100%; border: none; background: transparent; outline: none;
+    font-family: "Inter", sans-serif; font-size: 12px; color: var(--ink-faint);
+    padding: 0; margin-bottom: 0;
+    -webkit-user-select: text; user-select: text;
+  }
+  .song-artist-input::placeholder { color: var(--ink-faint); opacity: 0.6; }
+  .song-meta-divider { border: none; border-top: 1px solid rgba(61,51,42,0.1); margin: 8px 0 10px; }
+  /* Perf mode song meta */
+  #perf-song-title {
+    font-family: "Lora", serif; font-weight: 600; font-size: 20px;
+    color: #3D332A; margin-bottom: 2px;
+  }
+  #perf-song-artist {
+    font-family: "Inter", sans-serif; font-size: 13px; color: #8A7D68;
+    margin-bottom: 0;
+  }
+  .song-empty-state {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 10px; padding: 20px 0; color: var(--ink-faint);
+    font-size: 12px; font-family: "Inter", sans-serif; text-align: center;
+  }
+  .song-paste-btn {
+    background: rgba(161,76,90,0.1); color: var(--chord-ink); border: none;
+    border-radius: 999px; font-family: "Inter", sans-serif; font-size: 12px; font-weight: 500;
+    padding: 7px 16px; cursor: pointer; transition: background 0.12s;
+  }
+  .song-paste-btn:hover { background: rgba(161,76,90,0.18); }
+  .song-raw-editor {
+    width: 100%; border: none; background: rgba(61,51,42,0.04); outline: none; resize: none;
+    font-family: "Inter", sans-serif; font-size: 12px; color: var(--ink-neutral);
+    line-height: 1.6; border-radius: 6px; padding: 10px; min-height: 80px;
+    -webkit-user-select: text; user-select: text;
+  }
+  .song-raw-editor::placeholder { color: var(--ink-faint); }
+  /* Chord diagrams */
+  .chord-diagram-row {
+    display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end;
+    padding: 10px 0 14px; border-bottom: 1px solid rgba(61,51,42,0.1);
+    margin-bottom: 12px;
+  }
+  .chord-diagram {
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    flex-shrink: 0;
+  }
+  .chord-diagram-name {
+    font-family: "Inter", sans-serif; font-size: 10px; font-weight: 700;
+    color: #A14C5A; letter-spacing: 0.02em; text-align: center;
+  }
+  .chord-diagram svg { display: block; }
+  .perf-chord-diagram .chord-diagram-name { font-size: 9px; }
+  .song-render { font-family: "Inter", sans-serif; font-size: 13px; }
+  .song-verse { margin-bottom: 16px; position: relative; }
+  .song-verse-header {
+    display: flex; align-items: center; gap: 4px; margin-bottom: 3px;
+    opacity: 0; transition: opacity 0.12s;
+  }
+  .song-verse:hover .song-verse-header { opacity: 1; }
+  .song-verse-label-input {
+    border: none; background: transparent; outline: none;
+    font-family: "Inter", sans-serif; font-size: 10px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase; color: #8A7D68;
+    padding: 0; min-width: 60px; width: auto; flex: 1;
+    -webkit-user-select: text; user-select: text;
+  }
+  .song-verse-label-input::placeholder { color: rgba(138,125,104,0.4); }
+  .song-verse-btn {
+    background: none; border: none; cursor: pointer; padding: 2px 5px;
+    font-family: "Inter", sans-serif; font-size: 10px; color: #8A7D68;
+    border-radius: 4px; line-height: 1; display: flex; align-items: center; gap: 3px;
+    transition: background 0.1s, color 0.1s; flex-shrink: 0;
+  }
+  .song-verse-btn:hover { background: rgba(61,51,42,0.08); color: #3D332A; }
+  .song-verse-btn.delete:hover { background: rgba(161,76,90,0.1); color: #A14C5A; }
+  .song-verse-btn svg { width: 10px; height: 10px; }
+  .song-pair { margin-bottom: 0; }
+  .song-chord-line {
+    display: block; line-height: 1.2;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 14px; font-weight: 700; color: #A14C5A !important;
+    white-space: pre; user-select: text; -webkit-user-select: text;
+  }
+  .song-lyric-line {
+    font-family: "Courier New", Courier, monospace;
+    font-size: 13px; color: var(--ink-neutral); line-height: 1.4;
+    white-space: pre; user-select: text; -webkit-user-select: text;
+    margin-bottom: 2px;
+  }
+  .song-lyric-line:empty::after { content: "\00a0"; }
+  .song-chord-token {
+    display: inline-block; position: relative; cursor: pointer;
+    border-radius: 3px; padding: 0 1px;
+    transition: background 0.1s;
+    color: #A14C5A !important;
+  }
+  .song-chord-token.focused {
+    background: rgba(161,76,90,0.14); outline: none;
+  }
+  .song-chord-token-input {
+    position: absolute; opacity: 0; pointer-events: none; width: 1px; height: 1px;
+  }
+  .song-section-label {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--ink-faint); margin-bottom: 6px; margin-top: 4px;
+  }
+  .song-edit-bar {
+    display: flex; gap: 6px; align-items: center; margin-top: 8px; flex-wrap: wrap;
+  }
+  .song-action-btn {
+    background: rgba(61,51,42,0.07); border: none; border-radius: 999px;
+    font-family: "Inter", sans-serif; font-size: 11px; color: var(--ink-neutral);
+    padding: 4px 10px; cursor: pointer; transition: background 0.12s;
+  }
+  .song-action-btn:hover { background: rgba(61,51,42,0.13); }
+  .song-chord-hint {
+    font-size: 11px; color: var(--ink-faint); font-style: italic;
+  }
+
+  /* Block toolbar */
+  #block-toolbar {
+    display: flex; gap: 4px; align-items: center; flex-shrink: 0;
+    padding-bottom: 10px; border-bottom: 1px solid rgba(61,51,42,0.08);
+    margin-bottom: 4px;
+  }
+  .block-add-btn {
+    width: 28px; height: 28px; border-radius: 50%; border: none;
+    background: transparent; color: var(--ink-faint);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; padding: 0; transition: background 0.12s, color 0.12s;
+    flex-shrink: 0;
+  }
+  .block-add-btn svg { width: 15px; height: 15px; }
+  .block-add-btn:hover { background: rgba(61,51,42,0.08); color: var(--ink-neutral); }
+  .block-add-btn.song-btn:hover { background: rgba(161,76,90,0.1); color: var(--chord-ink); }
+  .block-toolbar-sep { width: 1px; height: 16px; background: rgba(61,51,42,0.15); flex-shrink: 0; }
+
+  .card-block.block-delete-zone { background: rgba(161,76,90,0.07); }
+
+  .card-block > .block-remove-btn {
+    position: absolute; right: -4px; top: 4px;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: rgba(61,51,42,0.08); border: none; cursor: pointer;
+    color: var(--ink-faint); font-size: 12px; line-height: 18px; text-align: center;
+    opacity: 0; transition: opacity 0.12s; padding: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .card-block:hover > .block-remove-btn { opacity: 1; }
+  .card-block > .block-remove-btn:hover { background: rgba(161,76,90,0.2); color: var(--chord-ink); }
+
+  .card-card .card-block > .block-remove-btn { display: none; }
+
+  .card-card .card-notes-rendered { padding: 0; }
+
+  .card-card .card-notes-rendered .song-chord-line { font-size: 9px; }
+  .card-card .card-notes-rendered .song-lyric-line { font-size: 10px; }
+  .card-card .card-notes-rendered .song-verse { margin-bottom: 8px; }
+
+  .card-card .card-notes-rendered { font-size: 11px; }
+
+  .card-card .card-notes-rendered .song-section-label { font-size: 8px; }
+
+  .card-card .song-edit-bar, .card-card .song-empty-state { display: none; }
+  /* ---- End block system ---- */
+
   .card-group-frame {
     position: absolute;
     border: 1.5px dashed rgba(61,51,42,0.22);
@@ -379,19 +911,35 @@
     border-radius: 12px 12px 0 0;
     border-bottom: none;
   }
+  .card-group-drag-bar {
+    height: 8px; cursor: grab; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 11px 11px 0 0;
+    pointer-events: auto;
+  }
+  .card-group-drag-bar:active { cursor: grabbing; }
+  .card-group-drag-bar-dots {
+    display: flex; gap: 3px; opacity: 0; transition: opacity 0.15s;
+  }
+  .card-group-frame:hover .card-group-drag-bar-dots { opacity: 1; }
+  .card-group-drag-bar-dots span {
+    width: 3px; height: 3px; border-radius: 50%;
+    background: var(--ink-faint); display: block;
+  }
   .card-group-header {
-    position: absolute; top: 0; left: 0; right: 0; height: 32px;
+    position: absolute; top: 8px; left: 0; right: 0; height: 32px;
     display: flex; align-items: center; gap: 6px; padding: 0 10px;
     cursor: grab; pointer-events: auto;
     background: rgba(255,255,255,0.5);
-    border-radius: 11px 11px 0 0;
+    overflow: hidden; box-sizing: border-box;
   }
   .card-group-frame:not(.table-mode) .card-group-header {
     border-bottom: 1.5px dashed rgba(61,51,42,0.22);
+    border-radius: 0;
   }
   .card-group-header:active { cursor: grabbing; }
   .card-group-title-input {
-    flex: 1; border: none; background: transparent; outline: none;
+    flex: 1; min-width: 0; border: none; background: transparent; outline: none;
     font-family: "Lora", serif; font-weight: 600; font-size: 13px; color: var(--ink-neutral); padding: 0;
   }
   .card-group-title-input::placeholder { color: var(--ink-faint); }
@@ -632,6 +1180,12 @@
     </svg>
     <input type="file" id="image-input" accept="image/*" hidden>
   </label>
+  <button class="tool-btn toolbar-icon-only" id="add-video-btn" title="Add YouTube video">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2" y="5" width="20" height="14" rx="2.5"/>
+      <polygon points="10,9 16,12 10,15" fill="currentColor" stroke="none"/>
+    </svg>
+  </button>
   <button class="tool-btn toolbar-icon-only" id="add-shape-btn" title="Add shape">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
       <rect x="3" y="7" width="11" height="11" rx="1.5"/>
@@ -682,6 +1236,13 @@
 
 <div id="group-suggest-chip" class="hidden">
   <button id="group-suggest-btn">Stack these cards</button>
+</div>
+
+<div id="stack-drop-chip">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+  <span id="stack-drop-label">Add to stack?</span>
+  <button id="stack-drop-yes">Add</button>
+  <button id="stack-drop-no">Cancel</button>
 </div>
 
 <div id="group-create-popup" class="hidden">
@@ -754,6 +1315,10 @@
   <button class="conn-color-swatch" data-color="rose" style="background:#E0527A;" title="Rose"></button>
   <button class="conn-color-swatch" data-color="slate" style="background:#3D7DCC;" title="Slate"></button>
   <button class="conn-color-swatch" data-color="olive" style="background:#C9A227;" title="Olive"></button>
+  <button class="conn-color-swatch" data-color="light-grey" style="background:#B0ABA4;" title="Light grey"></button>
+  <button class="conn-color-swatch" data-color="mid-grey" style="background:#7A7570;" title="Mid grey"></button>
+  <button class="conn-color-swatch" data-color="charcoal" style="background:#3A3530;" title="Charcoal"></button>
+  <button class="conn-color-swatch" data-color="black" style="background:#1A1714;" title="Black"></button>
   <div class="conn-style-group">
     <button class="conn-style-btn" data-style="solid" title="Solid">
       <svg viewBox="0 0 24 6"><line x1="1" y1="3" x2="23" y2="3" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
@@ -796,6 +1361,10 @@
       <button class="shape-color-swatch" data-color="sky" style="background:#C2D8EC;" title="Sky"></button>
       <button class="shape-color-swatch" data-color="blush" style="background:#EFCBCE;" title="Blush"></button>
       <button class="shape-color-swatch" data-color="yellow" style="background:#EDE0AE;" title="Yellow"></button>
+      <button class="shape-color-swatch" data-color="light-grey" style="background:#D4D0CB;" title="Light grey"></button>
+      <button class="shape-color-swatch" data-color="mid-grey" style="background:#9A9590;" title="Mid grey"></button>
+      <button class="shape-color-swatch" data-color="charcoal" style="background:#4A4540;" title="Charcoal"></button>
+      <button class="shape-color-swatch" data-color="black" style="background:#1A1714;" title="Black"></button>
     </div>
     <div class="shape-color-row">
       <button class="shape-color-swatch" data-color="sand-bright" style="background:#E0883A;" title="Bright amber"></button>
@@ -814,6 +1383,24 @@
       <button class="container-color-swatch" data-color="blush" style="background:#E0527A;" title="Blush"></button>
       <button class="container-color-swatch" data-color="yellow" style="background:#E8B92E;" title="Yellow"></button>
     </div>
+  </div>
+  <div id="stack-menu-fill-style" class="hidden">
+    <button class="shape-fill-btn" data-fill="solid" title="Solid fill">
+      <svg viewBox="0 0 32 18" fill="none"><rect x="1" y="1" width="30" height="16" rx="3" fill="currentColor" opacity="0.5"/><rect x="1" y="1" width="30" height="16" rx="3" stroke="currentColor" stroke-width="1.5"/></svg>
+      Solid
+    </button>
+    <button class="shape-fill-btn" data-fill="outline-solid" title="Outline only">
+      <svg viewBox="0 0 32 18" fill="none"><rect x="1" y="1" width="30" height="16" rx="3" stroke="currentColor" stroke-width="2"/></svg>
+      Outline
+    </button>
+    <button class="shape-fill-btn" data-fill="outline-dashed" title="Dashed outline">
+      <svg viewBox="0 0 32 18" fill="none"><rect x="1" y="1" width="30" height="16" rx="3" stroke="currentColor" stroke-width="2" stroke-dasharray="4 3"/></svg>
+      Dashed
+    </button>
+    <button class="shape-fill-btn" data-fill="outline-dotted" title="Dotted outline">
+      <svg viewBox="0 0 32 18" fill="none"><rect x="1" y="1" width="30" height="16" rx="3" stroke="currentColor" stroke-width="2" stroke-dasharray="1.5 3" stroke-linecap="round"/></svg>
+      Dotted
+    </button>
   </div>
   <div id="stack-menu-shape-types" class="hidden">
     <button class="shape-type-mini-btn" data-shape="rectangle" title="Rectangle">
@@ -877,49 +1464,62 @@
           </button>
         </div>
         <div class="header-divider"></div>
-        <div id="notes-toolbar">
-          <button type="button" class="notes-tool-btn" id="btn-heading" title="Heading">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M5 7h14" stroke-width="2.4"/>
-              <path d="M5 13h14" stroke-width="1.4" opacity="0.55"/>
-              <path d="M5 18h9" stroke-width="1.4" opacity="0.55"/>
-            </svg>
-          </button>
-          <button type="button" class="notes-tool-btn" id="btn-bullet" title="Bullets">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="4" cy="6" r="1"/>
-              <circle cx="4" cy="12" r="1"/>
-              <circle cx="4" cy="18" r="1"/>
-              <path d="M9 6h11"/>
-              <path d="M9 12h11"/>
-              <path d="M9 18h11"/>
-            </svg>
-          </button>
-          <button type="button" class="notes-tool-btn" id="btn-checklist" title="Checklist">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3.5 6.5l1.3 1.3L7.5 5"/>
-              <path d="M11 6h10"/>
-              <rect x="3" y="11" width="4.5" height="4.5" rx="0.8"/>
-              <path d="M11 13h10"/>
-              <rect x="3" y="17" width="4.5" height="4.5" rx="0.8"/>
-              <path d="M11 19h10"/>
-            </svg>
-          </button>
-          <label class="notes-tool-btn" id="btn-card-image" title="Add image">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="4" width="18" height="16" rx="2"/>
-              <circle cx="8.5" cy="9.5" r="1.5"/>
-              <path d="M21 15l-5-5L5 20"/>
-            </svg>
-            <input type="file" id="card-image-input" accept="image/*" hidden>
-          </label>
-        </div>
+        <div id="notes-toolbar" style="display:none"></div>
       </div>
       <input id="modal-title" placeholder="Title">
     </div>
     <div id="modal-body">
-      <textarea id="modal-notes" placeholder="Notes"></textarea>
-      <div id="card-image-gallery"></div>
+      <div id="block-toolbar">
+        <button type="button" class="block-add-btn" id="btn-add-text" title="Add text block">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 6h16M4 12h10M4 18h13"/>
+          </svg>
+        </button>
+        <button type="button" class="block-add-btn" id="btn-add-image" title="Add image block">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="16" rx="2"/>
+            <circle cx="8.5" cy="9.5" r="1.5"/>
+            <path d="M21 15l-5-5L5 20"/>
+          </svg>
+        </button>
+        <button type="button" class="block-add-btn song-btn" id="btn-add-song" title="Add song/chord block">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 18V5l10-2v13"/>
+            <circle cx="6.5" cy="18" r="2.5"/>
+            <circle cx="16.5" cy="16" r="2.5"/>
+          </svg>
+        </button>
+        <button type="button" class="block-add-btn" id="btn-add-video" title="Add YouTube video block">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="5" width="20" height="14" rx="2.5"/>
+            <polygon points="10,9 16,12 10,15" fill="currentColor" stroke="none"/>
+          </svg>
+        </button>
+        <div class="block-toolbar-sep"></div>
+        <button type="button" class="block-add-btn" id="btn-add-heading" title="Heading in text">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 7h14" stroke-width="2.4"/>
+            <path d="M5 13h14" stroke-width="1.4" opacity="0.55"/>
+            <path d="M5 18h9" stroke-width="1.4" opacity="0.55"/>
+          </svg>
+        </button>
+        <button type="button" class="block-add-btn" id="btn-add-bullet" title="Bullet list in text">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/>
+            <path d="M9 6h11"/><path d="M9 12h11"/><path d="M9 18h11"/>
+          </svg>
+        </button>
+        <button type="button" class="block-add-btn" id="btn-add-checklist" title="Checklist in text">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3.5 6.5l1.3 1.3L7.5 5"/><path d="M11 6h10"/>
+            <rect x="3" y="11" width="4.5" height="4.5" rx="0.8"/><path d="M11 13h10"/>
+            <rect x="3" y="17" width="4.5" height="4.5" rx="0.8"/><path d="M11 19h10"/>
+          </svg>
+        </button>
+      </div>
+      <div id="blocks-container"></div>
+      <textarea id="modal-notes" placeholder="Notes" style="display:none"></textarea>
+      <div id="card-image-gallery" style="display:none"></div>
       <button id="modal-delete">Delete card</button>
       <div id="delete-confirm" class="hidden">
         Delete this card?
@@ -931,6 +1531,23 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
     </div>
   </div>
+</div>
+
+<!-- Performance mode overlay -->
+<div id="perf-overlay">
+  <div id="perf-header">
+    <div id="perf-header-left">
+      <div id="perf-header-meta">
+        <div id="perf-song-title"></div>
+        <div id="perf-song-artist"></div>
+      </div>
+      <div id="perf-diagrams"></div>
+    </div>
+    <button id="perf-close" title="Exit performance mode (Esc)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div id="perf-columns"></div>
 </div>
 
 <script>
@@ -968,7 +1585,11 @@
     taupe: "#C9824A",
     rose: "#E0527A",
     slate: "#3D7DCC",
-    olive: "#C9A227"
+    olive: "#C9A227",
+    "light-grey": "#B0ABA4",
+    "mid-grey": "#7A7570",
+    charcoal: "#3A3530",
+    black: "#1A1714"
   };
 
   var CONNECTOR_DASH = {
@@ -1248,6 +1869,7 @@
     if (!state.connections) state.connections = [];
     if (!state.cards) state.cards = [];
     if (!state.images) state.images = [];
+    if (!state.videos) state.videos = [];
     if (!state.shapes) state.shapes = [];
     if (!state.containers) state.containers = [];
     if (!state.cardGroups) state.cardGroups = [];
@@ -1275,14 +1897,16 @@
     state.cardGroups.forEach(function (s) { s.cardIds.forEach(function (id) { stackedIds[id] = true; }); });
     var all = state.cards.filter(function (c) { return !stackedIds[c.id]; }).map(function (c) { return { ref: c, type: "card" }; })
       .concat(state.images.map(function (im) { return { ref: im, type: "image" }; }))
-      .concat(state.shapes.map(function (s) { return { ref: s, type: "shape" }; }));
+      .concat((state.videos || []).map(function (v) { return { ref: v, type: "video" }; }))
+      .concat(state.shapes.map(function (s) { return { ref: s, type: "shape" }; }))
+      .concat(state.cardGroups.map(function (g) { return { ref: g, type: "group" }; }));
     all.sort(function (a, b) { return (a.ref.z || 0) - (b.ref.z || 0); });
     return all;
   }
 
   function getMaxZ() {
     var max = -1;
-    state.cards.concat(state.images).concat(state.shapes).forEach(function (item) {
+    state.cards.concat(state.images).concat(state.videos || []).concat(state.shapes).concat(state.cardGroups).forEach(function (item) {
       if (typeof item.z === "number" && item.z > max) max = item.z;
     });
     return max;
@@ -1387,15 +2011,32 @@
     var rect = wrap.getBoundingClientRect();
     var scaleX = rect.width / contentW;
     var scaleY = rect.height / contentH;
-    var newScale = Math.max(0.15, Math.min(2, Math.min(scaleX, scaleY)));
-
+    var targetScale = Math.max(0.15, Math.min(2, Math.min(scaleX, scaleY)));
     var centerX = (minX + maxX) / 2;
     var centerY = (minY + maxY) / 2;
+    var targetPanX = rect.width / 2 - centerX * targetScale;
+    var targetPanY = rect.height / 2 - centerY * targetScale;
 
-    panX = rect.width / 2 - centerX * newScale;
-    panY = rect.height / 2 - centerY * newScale;
-    scale = newScale;
-    updateCanvasTransform();
+    var startPanX = panX, startPanY = panY, startScale = scale;
+    var duration = 420;
+    var startTime = null;
+
+    function ease(t) {
+      return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    }
+
+    function step(ts) {
+      if (!startTime) startTime = ts;
+      var t = Math.min(1, (ts - startTime) / duration);
+      var e = ease(t);
+      panX = startPanX + (targetPanX - startPanX) * e;
+      panY = startPanY + (targetPanY - startPanY) * e;
+      scale = startScale + (targetScale - startScale) * e;
+      updateCanvasTransform();
+      if (t < 1) requestAnimationFrame(step);
+    }
+
+    requestAnimationFrame(step);
   }
 
   // ---- Marquee selection (click-drag on empty canvas) ----
@@ -1437,6 +2078,7 @@
     selectedImageIds.clear();
     selectedShapeIds.clear();
     selectedGroupIds.clear();
+    selectedVideoIds.clear();
     document.querySelectorAll(".selected").forEach(function (el) { el.classList.remove("selected"); });
   }
 
@@ -1578,6 +2220,7 @@
 
   document.addEventListener("pointerdown", function (e) {
     if (!groupSuggestChip.contains(e.target)) hideGroupSuggestChip();
+    if (!stackDropChip.contains(e.target)) hideStackDropChip();
   });
 
   function renderGroupOrderList() {
@@ -1830,8 +2473,102 @@
     });
   }
 
-  function makeDraggable(el, onMove) {
+  // Stack drop chip state
+  var stackDropChip = document.getElementById("stack-drop-chip");
+  var stackDropLabel = document.getElementById("stack-drop-label");
+  var pendingStackDrop = null; // { cardId, groupId }
+
+  function clearStackDropTarget() {
+    document.querySelectorAll(".card-group-frame.stack-drop-target").forEach(function (el) {
+      el.classList.remove("stack-drop-target");
+    });
+  }
+
+  function hideStackDropChip() {
+    stackDropChip.classList.remove("visible");
+    clearStackDropTarget();
+    pendingStackDrop = null;
+  }
+
+  document.getElementById("stack-drop-yes").addEventListener("click", function () {
+    if (!pendingStackDrop) return;
+    var group = state.cardGroups.filter(function (g) { return g.id === pendingStackDrop.groupId; })[0];
+    if (group && group.cardIds.indexOf(pendingStackDrop.cardId) === -1) {
+      // FLIP: snapshot existing card positions before adding
+      var beforePositions = {};
+      group.cardIds.forEach(function (id) {
+        var el2 = itemsLayer.querySelector('.card[data-id="' + id + '"]');
+        if (el2) beforePositions[id] = { top: parseFloat(el2.style.top) };
+      });
+
+      group.cardIds.push(pendingStackDrop.cardId);
+      saveState();
+      refreshCanvas();
+
+      // FLIP: animate existing cards to their new positions
+      setTimeout(function () {
+        Object.keys(beforePositions).forEach(function (id) {
+          var el2 = itemsLayer.querySelector('.card[data-id="' + id + '"]');
+          if (!el2) return;
+          var newTop = parseFloat(el2.style.top);
+          var oldTop = beforePositions[id].top;
+          if (Math.abs(newTop - oldTop) < 1) return;
+          el2.style.transition = "none";
+          el2.style.top = oldTop + "px";
+          requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+              el2.style.transition = "";
+              el2.style.top = newTop + "px";
+            });
+          });
+        });
+
+        // Pulse frame and pop in new card
+        var frameEl = itemsLayer.querySelector('.card-group-frame[data-id="' + group.id + '"]');
+        if (frameEl) {
+          frameEl.classList.add("stack-just-received");
+          frameEl.addEventListener("animationend", function () { frameEl.classList.remove("stack-just-received"); }, { once: true });
+        }
+        var cardEl = itemsLayer.querySelector('.card[data-id="' + pendingStackDrop.cardId + '"]');
+        if (cardEl) {
+          cardEl.classList.add("just-joined-stack");
+          cardEl.addEventListener("animationend", function () { cardEl.classList.remove("just-joined-stack"); }, { once: true });
+        }
+      }, 16);
+    }
+    hideStackDropChip();
+  });
+
+  document.getElementById("stack-drop-no").addEventListener("click", hideStackDropChip);
+
+  function getStackFrameAtCanvasPoint(cx, cy, excludeCardId) {
+    // Find a stack frame whose canvas bounds contain this point
+    // excludeCardId: don't match the group the dragged card already belongs to
+    var found = null;
+    state.cardGroups.forEach(function (g) {
+      if (g.cardIds.indexOf(excludeCardId) !== -1) return; // already in this group
+      // Compute frame bounds from group layout
+      var cards = g.cardIds.map(function (id) {
+        return state.cards.filter(function (c) { return c.id === id; })[0];
+      }).filter(Boolean);
+      if (!cards.length) return;
+      var GROUP_PADDING = 8;
+      var GROUP_HEADER_HEIGHT = 40;
+      var minX = Math.min.apply(null, cards.map(function (c) { return c.x; })) - GROUP_PADDING;
+      var minY = g.y !== undefined ? g.y : (Math.min.apply(null, cards.map(function (c) { return c.y; })) - GROUP_HEADER_HEIGHT - GROUP_PADDING);
+      var maxX = Math.max.apply(null, cards.map(function (c) { return c.x + c.width; })) + GROUP_PADDING;
+      var maxY = Math.max.apply(null, cards.map(function (c) { return c.y + c.height; })) + GROUP_PADDING;
+      if (cx >= minX && cx <= maxX && cy >= minY && cy <= maxY) {
+        found = g;
+      }
+    });
+    return found;
+  }
+
+  function makeDraggable(el, onMove, dragCard) {
     el.addEventListener("pointerdown", function (e) {
+      // For cards, only drag from header — let body clicks through
+      if (dragCard && e.target.closest(".card-body")) return;
       e.stopPropagation();
       el.setPointerCapture(e.pointerId);
       el.style.transition = "none";
@@ -1843,21 +2580,60 @@
       function move(ev) {
         var dx = (ev.clientX - startX) / scale;
         var dy = (ev.clientY - startY) / scale;
-        if (Math.abs(dx) > 2 || Math.abs(dy) > 2) moved = true;
+        if (Math.abs(dx) > 2 || Math.abs(dy) > 2) {
+          if (!moved) el.classList.add("is-dragging");
+          moved = true;
+        }
         var newLeft = startLeft + dx;
         var newTop = startTop + dy;
         el.style.left = newLeft + "px";
         el.style.top = newTop + "px";
         if (onMove) onMove(newLeft, newTop);
+
+        // Stack drop target highlight
+        if (dragCard && moved) {
+          hideStackDropChip();
+          var cx = newLeft + (dragCard.width || 160) / 2;
+          var cy = newTop + (dragCard.height || 80) / 2;
+          var hoveredGroup = getStackFrameAtCanvasPoint(cx, cy, dragCard.id);
+          if (hoveredGroup) {
+            var frameEl = itemsLayer.querySelector('.card-group-frame[data-id="' + hoveredGroup.id + '"]');
+            if (frameEl) frameEl.classList.add("stack-drop-target");
+            el._pendingGroup = hoveredGroup;
+          } else {
+            el._pendingGroup = null;
+          }
+        }
       }
 
       function up(ev) {
         el.removeEventListener("pointermove", move);
         el.removeEventListener("pointerup", up);
         el.releasePointerCapture(ev.pointerId);
+        el.classList.remove("is-dragging");
+        if (moved) {
+          el.classList.add("just-landed");
+          el.addEventListener("animationend", function () { el.classList.remove("just-landed"); }, { once: true });
+        }
         saveState();
         el.dataset.justDragged = moved ? "1" : "0";
         clearAllTransitionOverrides();
+
+        // Show stack drop chip if hovering a group
+        if (dragCard && moved && el._pendingGroup) {
+          var group = el._pendingGroup;
+          el._pendingGroup = null;
+          clearStackDropTarget();
+          var groupTitle = group.title || "this stack";
+          stackDropLabel.textContent = 'Add to "' + groupTitle + '"?';
+          pendingStackDrop = { cardId: dragCard.id, groupId: group.id };
+          var rect = el.getBoundingClientRect();
+          stackDropChip.style.left = (rect.left + rect.width / 2) + "px";
+          stackDropChip.style.top = (rect.top + rect.height / 2) + "px";
+          stackDropChip.classList.add("visible");
+        } else {
+          el._pendingGroup = null;
+        }
       }
 
       el.addEventListener("pointermove", move);
@@ -1870,6 +2646,73 @@
     return { x: card.x + card.width / 2, y: card.y + card.height / 2 };
   }
 
+  function itemBounds(id) {
+    // Returns { x, y, w, h, cx, cy } for any item
+    var card = state.cards.filter(function (c) { return c.id === id; })[0];
+    if (card) return { x: card.x, y: card.y, w: card.width, h: card.height, cx: card.x + card.width / 2, cy: card.y + card.height / 2 };
+    var shape = (state.shapes || []).filter(function (s) { return s.id === id; })[0];
+    if (shape) return { x: shape.x, y: shape.y, w: shape.width, h: shape.height, cx: shape.x + shape.width / 2, cy: shape.y + shape.height / 2 };
+    var img = (state.images || []).filter(function (im) { return im.id === id; })[0];
+    if (img) return { x: img.x, y: img.y, w: img.width, h: img.height, cx: img.x + img.width / 2, cy: img.y + img.height / 2 };
+    var vid = (state.videos || []).filter(function (v) { return v.id === id; })[0];
+    if (vid) return { x: vid.x, y: vid.y, w: vid.width, h: vid.height, cx: vid.x + vid.width / 2, cy: vid.y + vid.height / 2 };
+    var group = (state.cardGroups || []).filter(function (g) { return g.id === id; })[0];
+    if (group) {
+      var layout = computeGroupLayout(group);
+      return { x: group.x, y: group.y, w: layout.frameWidth, h: layout.frameHeight, cx: group.x + layout.frameWidth / 2, cy: group.y + layout.frameHeight / 2 };
+    }
+    return null;
+  }
+
+  function itemCenter(id) {
+    var b = itemBounds(id);
+    return b ? { x: b.cx, y: b.cy } : null;
+  }
+
+  function edgePoint(bounds, targetX, targetY) {
+    // Find where the line from bounds centre toward (targetX, targetY) exits the bounds rect
+    var cx = bounds.cx, cy = bounds.cy;
+    var dx = targetX - cx, dy = targetY - cy;
+    if (dx === 0 && dy === 0) return { x: cx, y: cy };
+    var hw = bounds.w / 2, hh = bounds.h / 2;
+    var scaleX = dx !== 0 ? hw / Math.abs(dx) : Infinity;
+    var scaleY = dy !== 0 ? hh / Math.abs(dy) : Infinity;
+    var s = Math.min(scaleX, scaleY);
+    return { x: cx + dx * s, y: cy + dy * s };
+  }
+
+  function connectionPoints(fromId, toId) {
+    var fb = itemBounds(fromId);
+    var tb = itemBounds(toId);
+    if (!fb || !tb) return null;
+    // For groups use edge points; for other items use centre
+    var isGroupFrom = !!(state.cardGroups || []).filter(function (g) { return g.id === fromId; })[0];
+    var isGroupTo   = !!(state.cardGroups || []).filter(function (g) { return g.id === toId; })[0];
+    var a = isGroupFrom ? edgePoint(fb, tb.cx, tb.cy) : { x: fb.cx, y: fb.cy };
+    var b = isGroupTo   ? edgePoint(tb, fb.cx, fb.cy) : { x: tb.cx, y: tb.cy };
+    // If from-item is also a group, recalculate b toward a (not centre)
+    if (isGroupFrom && isGroupTo) {
+      a = edgePoint(fb, tb.cx, tb.cy);
+      b = edgePoint(tb, fb.cx, fb.cy);
+    }
+    return { a: a, b: b };
+  }
+
+  function itemFromPoint(clientX, clientY, excludeId) {
+    // Check what canvas item is at this screen point
+    var el = document.elementFromPoint(clientX, clientY);
+    if (!el) return null;
+    var card = el.closest(".card");
+    if (card && card.dataset.id !== excludeId) return card.dataset.id;
+    var shape = el.closest(".shape-item");
+    if (shape && shape.dataset.id !== excludeId) return shape.dataset.id;
+    var img = el.closest(".img-item");
+    if (img && img.dataset.id !== excludeId) return img.dataset.id;
+    var frame = el.closest(".card-group-frame");
+    if (frame && frame.dataset.id !== excludeId) return frame.dataset.id;
+    return null;
+  }
+
   function canvasPointFromEvent(e) {
     var rect = wrap.getBoundingClientRect();
     return {
@@ -1878,16 +2721,17 @@
     };
   }
 
-  function startConnection(e, fromCard, handleEl) {
+  function startConnection(e, fromId, handleEl) {
     e.stopPropagation();
     handleEl.setPointerCapture(e.pointerId);
-    var start = cardCenter(fromCard);
+    var startPt = itemCenter(fromId);
+    if (!startPt) return;
 
     var tempLine = document.createElementNS(SVG_NS, "line");
-    tempLine.setAttribute("x1", start.x);
-    tempLine.setAttribute("y1", start.y);
-    tempLine.setAttribute("x2", start.x);
-    tempLine.setAttribute("y2", start.y);
+    tempLine.setAttribute("x1", startPt.x);
+    tempLine.setAttribute("y1", startPt.y);
+    tempLine.setAttribute("x2", startPt.x);
+    tempLine.setAttribute("y2", startPt.y);
     tempLine.setAttribute("stroke", "#8A7D68");
     tempLine.setAttribute("stroke-width", "1.5");
     tempLine.setAttribute("stroke-dasharray", "4 4");
@@ -1895,6 +2739,11 @@
 
     function move(ev) {
       var p = canvasPointFromEvent(ev);
+      // Update start to edge point as target moves
+      var fb = itemBounds(fromId);
+      var start = fb ? edgePoint(fb, p.x, p.y) : startPt;
+      tempLine.setAttribute("x1", start.x);
+      tempLine.setAttribute("y1", start.y);
       tempLine.setAttribute("x2", p.x);
       tempLine.setAttribute("y2", p.y);
     }
@@ -1905,15 +2754,13 @@
       handleEl.releasePointerCapture(ev.pointerId);
       connectorLayer.removeChild(tempLine);
 
-      var targetEl = document.elementFromPoint(ev.clientX, ev.clientY);
-      var targetCard = targetEl ? targetEl.closest(".card") : null;
-      if (targetCard && targetCard.dataset.id !== fromCard.id) {
-        var toId = targetCard.dataset.id;
+      var toId = itemFromPoint(ev.clientX, ev.clientY, fromId);
+      if (toId) {
         var alreadyExists = state.connections.some(function (c) {
-          return (c.from === fromCard.id && c.to === toId) || (c.from === toId && c.to === fromCard.id);
+          return (c.from === fromId && c.to === toId) || (c.from === toId && c.to === fromId);
         });
         if (!alreadyExists) {
-          state.connections.push({ id: uid(), from: fromCard.id, to: toId, color: "taupe", style: "solid" });
+          state.connections.push({ id: uid(), from: fromId, to: toId, color: "taupe", style: "solid" });
           saveState();
         }
       }
@@ -1924,10 +2771,10 @@
     handleEl.addEventListener("pointerup", up);
   }
 
-  function isCardConnectorHidden(cardId) {
-    var card = state.cards.filter(function (c) { return c.id === cardId; })[0];
-    if (!card) return true;
-    var group = getCardGroup(cardId);
+  function isCardConnectorHidden(id) {
+    var card = state.cards.filter(function (c) { return c.id === id; })[0];
+    if (!card) return false; // non-card items are never hidden
+    var group = getCardGroup(id);
     if (!group) return false;
     if (group.collapsed) return true;
     var minSize = estimateMinCardSize(card);
@@ -1937,12 +2784,10 @@
   function renderConnections() {
     connectorLinesGroup.innerHTML = "";
     state.connections.forEach(function (conn) {
-      var fromCard = state.cards.filter(function (c) { return c.id === conn.from; })[0];
-      var toCard = state.cards.filter(function (c) { return c.id === conn.to; })[0];
-      if (!fromCard || !toCard) return;
       if (isCardConnectorHidden(conn.from) || isCardConnectorHidden(conn.to)) return;
-      var a = cardCenter(fromCard);
-      var b = cardCenter(toCard);
+      var pts = connectionPoints(conn.from, conn.to);
+      if (!pts) return;
+      var a = pts.a, b = pts.b;
 
       var hit = document.createElementNS(SVG_NS, "line");
       hit.setAttribute("x1", a.x);
@@ -2162,18 +3007,62 @@
 
     var preview = document.createElement("div");
     preview.className = "card-preview";
-    (card.notes || "").split("\n").forEach(function (line) {
-      var headingMatch = line.match(/^##\s+(.*)/);
-      var lineEl = document.createElement("div");
-      if (headingMatch) {
-        lineEl.className = "card-preview-heading";
-        lineEl.textContent = headingMatch[1];
-      } else {
-        lineEl.className = "card-preview-line";
-        lineEl.textContent = line;
-      }
-      preview.appendChild(lineEl);
-    });
+
+    // If card has blocks, render each block's preview appropriately
+    var blocks = card.blocks;
+    if (blocks && blocks.length) {
+      blocks.forEach(function (block) {
+        if (block.type === "song") {
+          // Song pill — title, artist, music note icon
+          var pill = document.createElement("div");
+          pill.className = "card-song-pill";
+          pill.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l10-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg>';
+          var textEl = document.createElement("div");
+          textEl.className = "card-song-pill-text";
+          var titleEl = document.createElement("div");
+          titleEl.className = "card-song-pill-title";
+          titleEl.textContent = block.songTitle || "Untitled song";
+          textEl.appendChild(titleEl);
+          if (block.songArtist) {
+            var artistEl = document.createElement("div");
+            artistEl.className = "card-song-pill-artist";
+            artistEl.textContent = block.songArtist;
+            textEl.appendChild(artistEl);
+          }
+          pill.appendChild(textEl);
+          preview.appendChild(pill);
+        } else if (block.type === "text" && block.content) {
+          block.content.split("\n").forEach(function (line) {
+            var headingMatch = line.match(/^##\s+(.*)/);
+            var lineEl = document.createElement("div");
+            if (headingMatch) {
+              lineEl.className = "card-preview-heading";
+              lineEl.textContent = headingMatch[1];
+            } else {
+              lineEl.className = "card-preview-line";
+              lineEl.textContent = line;
+            }
+            preview.appendChild(lineEl);
+          });
+        }
+        // image blocks shown via thumb row below
+      });
+    } else {
+      // Legacy fallback
+      (card.notes || "").split("\n").forEach(function (line) {
+        var headingMatch = line.match(/^##\s+(.*)/);
+        var lineEl = document.createElement("div");
+        if (headingMatch) {
+          lineEl.className = "card-preview-heading";
+          lineEl.textContent = headingMatch[1];
+        } else {
+          lineEl.className = "card-preview-line";
+          lineEl.textContent = line;
+        }
+        preview.appendChild(lineEl);
+      });
+    }
+
     preview.style.display = (card.height > minSize.minH + 20) ? "" : "none";
     body.appendChild(preview);
 
@@ -2211,12 +3100,36 @@
     itemsLayer.appendChild(el);
 
     if (!locked) {
-      el.addEventListener("pointerdown", function () {
+      // Header click — select/deselect
+      header.addEventListener("click", function (e) {
+        if (el.dataset.justDragged === "1") return;
+        e.stopPropagation();
+        if (selectedCardIds.has(card.id)) {
+          selectedCardIds.delete(card.id);
+          el.classList.remove("selected");
+        } else {
+          clearSelection();
+          selectedCardIds.add(card.id);
+          el.classList.add("selected");
+        }
+      });
+
+      // Body click — open card editor
+      body.addEventListener("click", function (e) {
+        if (el.dataset.justDragged === "1") return;
+        e.stopPropagation();
+        openCardFromOrigin(card.id, el);
+      });
+
+      // Pointerdown selects; drag only initiates from header
+      el.addEventListener("pointerdown", function (e) {
         if (!selectedCardIds.has(card.id)) {
           clearSelection();
           selectedCardIds.add(card.id);
           el.classList.add("selected");
         }
+        // Only allow drag to start from the header area
+        if (!e.target.closest(".card-header")) e.stopPropagation();
       });
 
       makeDraggable(el, function (x, y) {
@@ -2226,7 +3139,7 @@
         card.y = y;
         moveOtherSelectedItems(dx, dy, "card", card.id);
         renderConnections();
-      });
+      }, card);
     }
 
     if (locked) {
@@ -2242,10 +3155,129 @@
         if (atMinimum) maximizeCard(card);
         else minimizeCard(card);
       });
-    } else {
-      el.addEventListener("click", function () {
-        if (el.dataset.justDragged === "1") return;
-        openCardFromOrigin(card.id, el);
+
+      // Drag out of stack
+      el.addEventListener("pointerdown", function (e) {
+        if (e.target.closest(".card-header") === null && e.target.closest(".card-body") === null) return;
+        var startX = e.clientX, startY = e.clientY;
+        var moved = false;
+        var ejected = false;
+
+        function move(ev) {
+          var dx = (ev.clientX - startX) / scale;
+          var dy = (ev.clientY - startY) / scale;
+          if (!ejected && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) {
+            ejected = true;
+            moved = true;
+            // Remove from group
+            var group = getCardGroup(card.id);
+            if (group) {
+              // FLIP: snapshot positions of remaining cards before removal
+              var beforePositions = {};
+              group.cardIds.forEach(function (id) {
+                if (id === card.id) return;
+                var el2 = itemsLayer.querySelector('.card[data-id="' + id + '"]');
+                if (el2) beforePositions[id] = { top: parseFloat(el2.style.top) };
+              });
+
+              group.cardIds = group.cardIds.filter(function (id) { return id !== card.id; });
+              if (group.cardIds.length === 0) {
+                state.cardGroups = state.cardGroups.filter(function (g) { return g.id !== group.id; });
+              }
+
+              // Place card at current canvas position before refresh
+              var rect2 = wrap.getBoundingClientRect();
+              card.x = (ev.clientX - rect2.left - panX) / scale - card.width / 2;
+              card.y = (ev.clientY - rect2.top - panY) / scale - 20;
+              saveState();
+              refreshCanvas();
+
+              // FLIP: for each remaining card, jump to old position then transition to new
+              Object.keys(beforePositions).forEach(function (id) {
+                var el2 = itemsLayer.querySelector('.card[data-id="' + id + '"]');
+                if (!el2) return;
+                var newTop = parseFloat(el2.style.top);
+                var oldTop = beforePositions[id].top;
+                if (Math.abs(newTop - oldTop) < 1) return;
+                el2.style.transition = "none";
+                el2.style.top = oldTop + "px";
+                requestAnimationFrame(function () {
+                  requestAnimationFrame(function () {
+                    el2.style.transition = "";
+                    el2.style.top = newTop + "px";
+                  });
+                });
+              });
+            } else {
+              var rect2 = wrap.getBoundingClientRect();
+              card.x = (ev.clientX - rect2.left - panX) / scale - card.width / 2;
+              card.y = (ev.clientY - rect2.top - panY) / scale - 20;
+              saveState();
+              refreshCanvas();
+            }
+            // Hand off to the newly rendered free card element
+            var newEl = itemsLayer.querySelector('.card[data-id="' + card.id + '"]');
+            if (newEl) {
+              newEl.classList.add("is-dragging");
+              newEl.setPointerCapture(e.pointerId);
+              var newStartX = ev.clientX, newStartY = ev.clientY;
+              var newStartLeft = card.x, newStartTop = card.y;
+              function newMove(ev2) {
+                var dx2 = (ev2.clientX - newStartX) / scale;
+                var dy2 = (ev2.clientY - newStartY) / scale;
+                card.x = newStartLeft + dx2;
+                card.y = newStartTop + dy2;
+                newEl.style.left = card.x + "px";
+                newEl.style.top = card.y + "px";
+                renderConnections();
+                var hoveredGroup = getStackFrameAtCanvasPoint(card.x + card.width / 2, card.y + card.height / 2, card.id);
+                clearStackDropTarget();
+                if (hoveredGroup) {
+                  var frameEl = itemsLayer.querySelector('.card-group-frame[data-id="' + hoveredGroup.id + '"]');
+                  if (frameEl) frameEl.classList.add("stack-drop-target");
+                  newEl._pendingGroup = hoveredGroup;
+                } else {
+                  newEl._pendingGroup = null;
+                }
+              }
+              function newUp(ev2) {
+                newEl.removeEventListener("pointermove", newMove);
+                newEl.removeEventListener("pointerup", newUp);
+                newEl.classList.remove("is-dragging");
+                newEl.classList.add("just-landed");
+                newEl.addEventListener("animationend", function () { newEl.classList.remove("just-landed"); }, { once: true });
+                saveState();
+                newEl.dataset.justDragged = "1";
+                clearAllTransitionOverrides();
+                if (newEl._pendingGroup) {
+                  var g = newEl._pendingGroup;
+                  newEl._pendingGroup = null;
+                  clearStackDropTarget();
+                  stackDropLabel.textContent = 'Add to "' + (g.title || "this stack") + '"?';
+                  pendingStackDrop = { cardId: card.id, groupId: g.id };
+                  var r = newEl.getBoundingClientRect();
+                  stackDropChip.style.left = (r.left + r.width / 2) + "px";
+                  stackDropChip.style.top = (r.top + r.height / 2) + "px";
+                  stackDropChip.classList.add("visible");
+                }
+              }
+              newEl.addEventListener("pointermove", newMove);
+              newEl.addEventListener("pointerup", newUp);
+            }
+            document.removeEventListener("pointermove", move);
+            document.removeEventListener("pointerup", up);
+          }
+        }
+
+        function up() {
+          document.removeEventListener("pointermove", move);
+          document.removeEventListener("pointerup", up);
+          el.dataset.justDragged = moved ? "1" : "0";
+        }
+
+        // Listen on document so we get events even if pointer leaves el
+        document.addEventListener("pointermove", move);
+        document.addEventListener("pointerup", up);
       });
     }
 
@@ -2298,7 +3330,7 @@
 
     if (connectHandle) {
       connectHandle.addEventListener("pointerdown", function (e) {
-        startConnection(e, card, connectHandle);
+        startConnection(e, card.id, connectHandle);
       });
       connectHandle.addEventListener("click", function (e) { e.stopPropagation(); });
     }
@@ -2402,6 +3434,14 @@
       openStackMenu(img, "image", e.clientX, e.clientY);
     });
 
+    var imgConnectHandle = document.createElement("div");
+    imgConnectHandle.className = "connect-handle";
+    el.appendChild(imgConnectHandle);
+    imgConnectHandle.addEventListener("pointerdown", function (e) {
+      startConnection(e, img.id, imgConnectHandle);
+    });
+    imgConnectHandle.addEventListener("click", function (e) { e.stopPropagation(); });
+
     return el;
   }
 
@@ -2415,7 +3455,11 @@
     "sage-bright": "#4FAF54",
     "sky-bright": "#3B82C4",
     "blush-bright": "#E0527A",
-    "yellow-bright": "#E8B92E"
+    "yellow-bright": "#E8B92E",
+    "light-grey": "#D4D0CB",
+    "mid-grey": "#9A9590",
+    "charcoal": "#4A4540",
+    "black": "#1A1714"
   };
 
   var CONTAINER_COLORS = {
@@ -2436,9 +3480,264 @@
     chevron: "polygon(0% 0%, 70% 0%, 100% 50%, 70% 100%, 0% 100%, 30% 50%)"
   };
 
-  function applyShapeStyle(fillEl, type) {
-    fillEl.style.borderRadius = type === "rectangle" ? "10px" : type === "circle" ? "50%" : "0";
-    fillEl.style.clipPath = SHAPE_CLIP_PATHS[type] || "none";
+  function getDeformClipPath(shape) {
+    var d = (shape.deform !== undefined) ? shape.deform : 0.5;
+    d = Math.max(0.01, Math.min(0.99, d));
+    var type = shape.type || "rectangle";
+    switch (type) {
+      case "triangle":
+        // d controls apex X position (0=left, 0.5=centre, 1=right)
+        return "polygon(" + Math.round(d * 100) + "% 0%, 0% 100%, 100% 100%)";
+      case "arrow":
+        // d controls shaft height (how thick the shaft is, 0.1–0.9)
+        var sh = Math.round(d * 80 + 10); // 10%–90%
+        var half = Math.round(sh / 2);
+        var top = 50 - half; var bot = 50 + half;
+        return "polygon(0% " + top + "%, 55% " + top + "%, 55% 0%, 100% 50%, 55% 100%, 55% " + bot + "%, 0% " + bot + "%)";
+      case "chevron":
+        // d controls how deep the indent is (0=flat, 1=very pointed)
+        var depth = Math.round(d * 90);
+        return "polygon(0% 0%, " + (100 - depth) + "% 0%, 100% 50%, " + (100 - depth) + "% 100%, 0% 100%, " + depth + "% 50%)";
+      case "star":
+        // d controls inner radius of star (0.1=spiky, 0.8=plump)
+        var inner = Math.round(d * 70 + 10);
+        var pts = [];
+        for (var i = 0; i < 10; i++) {
+          var angle = (i * 36 - 90) * Math.PI / 180;
+          var r = (i % 2 === 0) ? 50 : inner / 2;
+          pts.push(Math.round(50 + r * Math.cos(angle)) + "% " + Math.round(50 + r * Math.sin(angle)) + "%");
+        }
+        return "polygon(" + pts.join(", ") + ")";
+      case "circle":
+        // d controls x-radius squeeze (0.2=thin ellipse, 1=circle)
+        return "none"; // border-radius handles circle; we use deform for squircle-ness below
+      case "rectangle":
+        return "none"; // border-radius handled separately
+      default:
+        return SHAPE_CLIP_PATHS[type] || "none";
+    }
+  }
+
+  function getShapeSVGPath(type, deform) {
+    var d = (deform !== undefined) ? Math.max(0.01, Math.min(0.99, deform)) : 0.5;
+    switch (type) {
+      case "triangle": {
+        var apex = Math.round(d * 100);
+        return "M " + apex + " 0 L 0 100 L 100 100 Z";
+      }
+      case "arrow": {
+        var sh = Math.round(d * 80 + 10);
+        var half = sh / 2;
+        var top = 50 - half, bot = 50 + half;
+        return "M 0 " + top + " L 55 " + top + " L 55 0 L 100 50 L 55 100 L 55 " + bot + " L 0 " + bot + " Z";
+      }
+      case "chevron": {
+        var depth = Math.round(d * 90);
+        return "M 0 0 L " + (100-depth) + " 0 L 100 50 L " + (100-depth) + " 100 L 0 100 L " + depth + " 50 Z";
+      }
+      case "star": {
+        var inner = Math.round(d * 70 + 10);
+        var pts = [];
+        for (var i = 0; i < 10; i++) {
+          var angle = (i * 36 - 90) * Math.PI / 180;
+          var r = (i % 2 === 0) ? 50 : inner / 2;
+          pts.push((50 + r * Math.cos(angle)).toFixed(1) + "," + (50 + r * Math.sin(angle)).toFixed(1));
+        }
+        return "M " + pts.join(" L ") + " Z";
+      }
+      default: return null;
+    }
+  }
+
+  function applyShapeStyle(fillEl, shape) {
+    var type = (typeof shape === "string") ? shape : (shape.type || "rectangle");
+    var d = (shape && shape.deform !== undefined) ? shape.deform : 0.5;
+    var fillStyle = (shape && shape.fillStyle) ? shape.fillStyle : "solid";
+    var color = (shape && shape.color) ? (SHAPE_COLORS[shape.color] || SHAPE_COLORS.sand) : SHAPE_COLORS.sand;
+
+    // Remove any existing SVG outline overlay
+    var parent = fillEl.parentNode;
+    if (parent) {
+      var old = parent.querySelector(".shape-svg-outline");
+      if (old) parent.removeChild(old);
+    }
+
+    // Border radius / clip path
+    if (type === "rectangle") {
+      var radius = Math.round(d * 50);
+      fillEl.style.borderRadius = radius + "px";
+      fillEl.style.clipPath = "none";
+    } else if (type === "circle") {
+      var rx = Math.round(Math.max(10, d * 100));
+      fillEl.style.borderRadius = rx + "% / 50%";
+      fillEl.style.clipPath = "none";
+    } else {
+      fillEl.style.borderRadius = "0";
+      fillEl.style.clipPath = getDeformClipPath(typeof shape === "string" ? { type: shape } : shape);
+    }
+
+    var isClipped = fillEl.style.clipPath && fillEl.style.clipPath !== "none";
+
+    if (fillStyle === "solid") {
+      fillEl.style.background = color;
+      fillEl.style.border = "none";
+      fillEl.style.outline = "none";
+    } else {
+      fillEl.style.background = "transparent";
+      fillEl.style.border = "none";
+      fillEl.style.outline = "none";
+
+      if (!isClipped) {
+        // Rectangle / circle — CSS border works fine
+        var dashStyle = fillStyle === "outline-dashed" ? "dashed" : fillStyle === "outline-dotted" ? "dotted" : "solid";
+        fillEl.style.border = "3px " + dashStyle + " " + color;
+      } else {
+        // Polygon shapes — draw an SVG outline overlay
+        var svgPath = getShapeSVGPath(type, d);
+        if (svgPath && parent) {
+          var dashArray = fillStyle === "outline-dashed" ? "8,5" : fillStyle === "outline-dotted" ? "2,5" : "none";
+          var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+          svg.setAttribute("viewBox", "0 0 100 100");
+          svg.setAttribute("preserveAspectRatio", "none");
+          svg.style.cssText = "position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible;";
+          svg.classList.add("shape-svg-outline");
+          var path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+          path.setAttribute("d", svgPath);
+          path.setAttribute("fill", "none");
+          path.setAttribute("stroke", color);
+          path.setAttribute("stroke-width", "3");
+          path.setAttribute("vector-effect", "non-scaling-stroke");
+          if (dashArray !== "none") {
+            path.setAttribute("stroke-dasharray", dashArray);
+            path.setAttribute("stroke-linecap", "round");
+          }
+          svg.appendChild(path);
+          parent.appendChild(svg);
+        }
+      }
+    }
+  }
+
+  function renderShape(shape) {
+    shape.deform = (shape.deform !== undefined) ? shape.deform : 0.5;
+    var el = document.createElement("div");
+    el.className = "shape-item" + (selectedShapeIds.has(shape.id) ? " selected" : "");
+    el.style.left = shape.x + "px";
+    el.style.top = shape.y + "px";
+    el.style.width = shape.width + "px";
+    el.style.height = shape.height + "px";
+    if (shape.rotation) el.style.transform = "rotate(" + shape.rotation + "deg)";
+    el.dataset.id = shape.id;
+
+    var fill = document.createElement("div");
+    fill.className = "shape-fill";
+    applyShapeStyle(fill, shape);
+    el.appendChild(fill);
+
+    var handle = document.createElement("div");
+    handle.className = "resize-handle";
+    handle.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>';
+    el.appendChild(handle);
+
+    // Deform handle — top-left, pink dot
+    var deformHandle = document.createElement("div");
+    deformHandle.className = "deform-handle";
+    deformHandle.title = "Drag to deform shape";
+    deformHandle.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M8 12h8M12 8v8"/></svg>';
+    el.appendChild(deformHandle);
+
+    itemsLayer.appendChild(el);
+
+    el.addEventListener("pointerdown", function () {
+      if (!selectedShapeIds.has(shape.id)) {
+        clearSelection();
+        selectedShapeIds.add(shape.id);
+        el.classList.add("selected");
+      }
+    });
+
+    makeDraggable(el, function (x, y) {
+      var dx = x - shape.x;
+      var dy = y - shape.y;
+      shape.x = x;
+      shape.y = y;
+      moveOtherSelectedItems(dx, dy, "shape", shape.id);
+      renderConnections();
+    });
+
+    // Resize + rotate handle (bottom-right)
+    handle.addEventListener("pointerdown", function (e) {
+      e.stopPropagation();
+      handle.setPointerCapture(e.pointerId);
+      el.style.transition = "none";
+      var rect = el.getBoundingClientRect();
+      var center = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+      var startDist = Math.max(1, Math.hypot(e.clientX - center.x, e.clientY - center.y));
+      var startAngleRaw = Math.atan2(e.clientY - center.y, e.clientX - center.x) * 180 / Math.PI;
+      var startRotation = shape.rotation || 0;
+      var startW = shape.width, startH = shape.height;
+      var ratio = startW / startH;
+      function move(ev) {
+        var dist = Math.hypot(ev.clientX - center.x, ev.clientY - center.y);
+        var newW = Math.max(40, startW * dist / startDist);
+        shape.width = newW; shape.height = newW / ratio;
+        el.style.width = newW + "px"; el.style.height = (newW / ratio) + "px";
+        var angleRaw = Math.atan2(ev.clientY - center.y, ev.clientX - center.x) * 180 / Math.PI;
+        var rawRotation = startRotation + (angleRaw - startAngleRaw);
+        var norm = ((rawRotation % 360) + 360) % 360;
+        var nearest90 = Math.round(norm / 90) * 90 % 360;
+        var diff = Math.min(Math.abs(norm - nearest90), 360 - Math.abs(norm - nearest90));
+        shape.rotation = Math.round(((diff < 2.5) ? nearest90 : norm) * 10) / 10;
+        el.style.transform = "rotate(" + shape.rotation + "deg)";
+      }
+      function up(ev) {
+        handle.removeEventListener("pointermove", move);
+        handle.removeEventListener("pointerup", up);
+        handle.releasePointerCapture(ev.pointerId);
+        saveState(); clearAllTransitionOverrides();
+      }
+      handle.addEventListener("pointermove", move);
+      handle.addEventListener("pointerup", up);
+    });
+    handle.addEventListener("click", function (e) { e.stopPropagation(); });
+
+    // Deform handle (top-left, pink)
+    deformHandle.addEventListener("pointerdown", function (e) {
+      e.stopPropagation();
+      deformHandle.setPointerCapture(e.pointerId);
+      var startX = e.clientX;
+      var startDeform = shape.deform !== undefined ? shape.deform : 0.5;
+      function move(ev) {
+        var dx = (ev.clientX - startX) / (shape.width * scale);
+        shape.deform = Math.max(0.01, Math.min(0.99, startDeform + dx));
+        applyShapeStyle(fill, shape);
+      }
+      function up(ev) {
+        deformHandle.removeEventListener("pointermove", move);
+        deformHandle.removeEventListener("pointerup", up);
+        deformHandle.releasePointerCapture(ev.pointerId);
+        saveState();
+      }
+      deformHandle.addEventListener("pointermove", move);
+      deformHandle.addEventListener("pointerup", up);
+    });
+    deformHandle.addEventListener("click", function (e) { e.stopPropagation(); });
+
+    el.addEventListener("contextmenu", function (e) {
+      e.preventDefault(); e.stopPropagation();
+      openStackMenu(shape, "shape", e.clientX, e.clientY);
+    });
+
+    // Connect handle
+    var shapeConnectHandle = document.createElement("div");
+    shapeConnectHandle.className = "connect-handle";
+    el.appendChild(shapeConnectHandle);
+    shapeConnectHandle.addEventListener("pointerdown", function (e) {
+      startConnection(e, shape.id, shapeConnectHandle);
+    });
+    shapeConnectHandle.addEventListener("click", function (e) { e.stopPropagation(); });
+
+    return el;
   }
 
   function renderContainer(container) {
@@ -2566,102 +3865,6 @@
     return el;
   }
 
-  function renderShape(shape) {
-    var el = document.createElement("div");
-    el.className = "shape-item" + (selectedShapeIds.has(shape.id) ? " selected" : "");
-    el.style.left = shape.x + "px";
-    el.style.top = shape.y + "px";
-    el.style.width = shape.width + "px";
-    el.style.height = shape.height + "px";
-    if (shape.rotation) el.style.transform = "rotate(" + shape.rotation + "deg)";
-    el.dataset.id = shape.id;
-
-    var fill = document.createElement("div");
-    fill.className = "shape-fill";
-    fill.style.background = SHAPE_COLORS[shape.color] || SHAPE_COLORS.sand;
-    applyShapeStyle(fill, shape.type || "rectangle");
-    el.appendChild(fill);
-
-    var handle = document.createElement("div");
-    handle.className = "resize-handle";
-    handle.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>';
-    el.appendChild(handle);
-
-    itemsLayer.appendChild(el);
-
-    el.addEventListener("pointerdown", function () {
-      if (!selectedShapeIds.has(shape.id)) {
-        clearSelection();
-        selectedShapeIds.add(shape.id);
-        el.classList.add("selected");
-      }
-    });
-
-    makeDraggable(el, function (x, y) {
-      var dx = x - shape.x;
-      var dy = y - shape.y;
-      shape.x = x;
-      shape.y = y;
-      moveOtherSelectedItems(dx, dy, "shape", shape.id);
-      renderConnections();
-    });
-
-    // Combined resize + rotate handle (same as images)
-    handle.addEventListener("pointerdown", function (e) {
-      e.stopPropagation();
-      handle.setPointerCapture(e.pointerId);
-      el.style.transition = "none";
-
-      var rect = el.getBoundingClientRect();
-      var center = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
-      var startDist = Math.max(1, Math.hypot(e.clientX - center.x, e.clientY - center.y));
-      var startAngleRaw = Math.atan2(e.clientY - center.y, e.clientX - center.x) * 180 / Math.PI;
-      var startRotation = shape.rotation || 0;
-      var startW = shape.width, startH = shape.height;
-      var ratio = startW / startH;
-
-      function move(ev) {
-        var dist = Math.hypot(ev.clientX - center.x, ev.clientY - center.y);
-        var scaleFactor = dist / startDist;
-        var newW = Math.max(40, startW * scaleFactor);
-        var newH = newW / ratio;
-        shape.width = newW;
-        shape.height = newH;
-        el.style.width = newW + "px";
-        el.style.height = newH + "px";
-
-        var angleRaw = Math.atan2(ev.clientY - center.y, ev.clientX - center.x) * 180 / Math.PI;
-        var rawRotation = startRotation + (angleRaw - startAngleRaw);
-        var norm = ((rawRotation % 360) + 360) % 360;
-        var nearest90 = Math.round(norm / 90) * 90 % 360;
-        var diff = Math.min(Math.abs(norm - nearest90), 360 - Math.abs(norm - nearest90));
-        var rotation = (diff < 2.5) ? nearest90 : norm;
-        shape.rotation = Math.round(rotation * 10) / 10;
-        el.style.transform = "rotate(" + shape.rotation + "deg)";
-      }
-
-      function up(ev) {
-        handle.removeEventListener("pointermove", move);
-        handle.removeEventListener("pointerup", up);
-        handle.releasePointerCapture(ev.pointerId);
-        saveState();
-        clearAllTransitionOverrides();
-      }
-
-      handle.addEventListener("pointermove", move);
-      handle.addEventListener("pointerup", up);
-    });
-    handle.addEventListener("click", function (e) { e.stopPropagation(); });
-
-    el.addEventListener("contextmenu", function (e) {
-      e.preventDefault();
-      e.stopPropagation();
-      openStackMenu(shape, "shape", e.clientX, e.clientY);
-    });
-
-    return el;
-  }
-
   // ---- Stacking order menu ----
   var stackMenu = document.getElementById("stack-menu");
   var stackMenuTarget = null;
@@ -2676,7 +3879,13 @@
     document.getElementById("stack-menu-colors").classList.toggle("hidden", itemType !== "shape");
     document.getElementById("stack-menu-container-colors").classList.toggle("hidden", itemType !== "container");
     document.getElementById("stack-menu-shape-types").classList.toggle("hidden", itemType !== "shape");
-    document.getElementById("stack-menu-delete").classList.toggle("hidden", itemType === "card");
+    document.getElementById("stack-menu-fill-style").classList.toggle("hidden", itemType !== "shape");
+    document.getElementById("stack-menu-delete").classList.toggle("hidden", itemType === "card" || itemType === "group");
+    if (itemType === "shape") {
+      document.querySelectorAll(".shape-fill-btn").forEach(function (btn) {
+        btn.classList.toggle("selected", btn.dataset.fill === (itemRef.fillStyle || "solid"));
+      });
+    }
     if (itemType === "shape") {
       document.querySelectorAll(".shape-color-swatch").forEach(function (sw) {
         sw.classList.toggle("selected", sw.dataset.color === (itemRef.color || "sand"));
@@ -2750,6 +3959,18 @@
     });
   });
 
+  document.querySelectorAll(".shape-fill-btn").forEach(function (btn) {
+    btn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      if (stackMenuTarget && stackMenuType === "shape") {
+        stackMenuTarget.fillStyle = btn.dataset.fill;
+        saveState();
+        refreshCanvas();
+      }
+      closeStackMenu();
+    });
+  });
+
   function deleteCanvasItem(item, type) {
     if (type === "image") {
       var imgIdx = state.images.indexOf(item);
@@ -2763,6 +3984,10 @@
     } else {
       return;
     }
+    // Clean up any connections involving this item
+    state.connections = state.connections.filter(function (c) {
+      return c.from !== item.id && c.to !== item.id;
+    });
     saveState();
     refreshCanvas();
   }
@@ -2791,13 +4016,914 @@
     closeOptionPicker();
   }, true);
 
+  // ---- Block system ----
+  function migrateCardToBlocks(card) {
+    // Convert legacy notes string + images array into blocks array
+    if (card.blocks) return; // already migrated
+    card.blocks = [];
+    if (card.notes && card.notes.trim()) {
+      card.blocks.push({ id: uid(), type: "text", content: card.notes });
+    }
+    if (card.images && card.images.length) {
+      card.blocks.push({ id: uid(), type: "image", images: card.images.slice() });
+    }
+    if (!card.blocks.length) {
+      card.blocks.push({ id: uid(), type: "text", content: "" });
+    }
+  }
+
+  function saveBlocksToCard(card) {
+    if (!card.blocks) return;
+    // Keep legacy fields in sync for canvas rendering
+    var textParts = [];
+    card.images = [];
+    card.blocks.forEach(function (b) {
+      if (b.type === "text") textParts.push(b.content || "");
+      if (b.type === "image") card.images = card.images.concat(b.images || []);
+      if (b.type === "song") {
+        // Represent song in legacy notes as raw markup
+        textParts.push(songBlockToRaw(b));
+      }
+    });
+    card.notes = textParts.join("\n\n");
+  }
+
+  // ---- Song parsing / serialising ----
+  // Storage format: array of verse objects
+  // verse: { label: string|null, pairs: [{chords: [{text, offset}], lyric: string}] }
+  // Raw markup format: [Chord]lyric text  (Ultimate Guitar style)
+
+  function parseUGRaw(raw) {
+    // Handles two UG formats:
+    // 1. Print format: chord-only line above lyric line  ("F         G\nOh Randy...")
+    // 2. Inline format: [Chord] markers within lyric line ("[F]Oh [G]Randy...")
+    // Also handles [Verse 1], [Chorus] section labels and blank-line verse breaks.
+
+    var lines = raw.split("\n");
+    var verses = [];
+    var currentVerse = { label: null, pairs: [] };
+    var pendingChordLine = null; // holds a chord-only line waiting for its lyric
+
+    function isChordLine(line) {
+      // A chord line contains only chord names and spaces — no general lowercase words
+      var stripped = line.trim();
+      if (!stripped) return false;
+      // Must have at least one chord root (A-G)
+      if (!/[A-G]/.test(stripped)) return false;
+      // Split into tokens and check each one looks like a chord
+      var tokens = stripped.split(/\s+/);
+      if (!tokens.length) return false;
+      var chordPattern = /^[A-G][#b]?(m|maj|min|sus|aug|dim|add|M)?[0-9]*(\/[A-G][#b]?)?$/;
+      return tokens.every(function(t) { return t === "" || chordPattern.test(t); });
+    }
+
+    function parseChordPositions(chordLine) {
+      var chords = [];
+      var re = /([A-G][#b]?(?:m|maj|min|sus|aug|dim|add|M)?[0-9]*(?:\/[A-G][#b]?)?)/g;
+      var m;
+      while ((m = re.exec(chordLine)) !== null) {
+        chords.push({ text: m[1], offset: m.index });
+      }
+      return chords;
+    }
+
+    function pushVerse() {
+      if (pendingChordLine !== null) {
+        // Orphaned chord line with no lyric after it
+        currentVerse.pairs.push({ chords: parseChordPositions(pendingChordLine), lyric: "" });
+        pendingChordLine = null;
+      }
+      if (currentVerse.pairs.length) verses.push(currentVerse);
+    }
+
+    var i = 0;
+    while (i < lines.length) {
+      var line = lines[i];
+
+      // Section label: [Verse 1], [Chorus], [Bridge] etc.
+      if (/^\[[^\]]+\]\s*$/.test(line) && !/^\[[A-G][#b]?[^\]]*\]\s*$/.test(line)) {
+        pushVerse();
+        currentVerse = { label: line.replace(/^\[|\]\s*$/g, "").trim(), pairs: [] };
+        pendingChordLine = null;
+        i++; continue;
+      }
+
+      // Blank line = verse break
+      if (line.trim() === "") {
+        if (pendingChordLine !== null || currentVerse.pairs.length) {
+          pushVerse();
+          currentVerse = { label: null, pairs: [] };
+        }
+        i++; continue;
+      }
+
+      // Inline [Chord] format
+      if (/\[[A-G][^\]]*\]/.test(line)) {
+        if (pendingChordLine !== null) {
+          currentVerse.pairs.push({ chords: parseChordPositions(pendingChordLine), lyric: "" });
+          pendingChordLine = null;
+        }
+        currentVerse.pairs.push(parseInlineLine(line));
+        i++; continue;
+      }
+
+      // Chord-only line (print format)
+      if (isChordLine(line)) {
+        if (pendingChordLine !== null) {
+          // Two chord lines in a row — flush first as orphan
+          currentVerse.pairs.push({ chords: parseChordPositions(pendingChordLine), lyric: "" });
+        }
+        pendingChordLine = line;
+        i++; continue;
+      }
+
+      // Lyric line
+      if (pendingChordLine !== null) {
+        // Pair the pending chord line with this lyric
+        currentVerse.pairs.push({ chords: parseChordPositions(pendingChordLine), lyric: line });
+        pendingChordLine = null;
+      } else {
+        currentVerse.pairs.push({ chords: [], lyric: line });
+      }
+      i++;
+    }
+
+    pushVerse();
+    if (!verses.length) verses.push({ label: null, pairs: [{ chords: [], lyric: raw }] });
+    return verses;
+  }
+
+  function parseInlineLine(line) {
+    // Convert "[G]Here comes the [C]sun" into chords with character offsets into lyric
+    var chords = [];
+    var firstChordPos = line.search(/\[[A-G][^\]]*\]/);
+    var lyric = firstChordPos > 0 ? line.slice(0, firstChordPos) : "";
+    var searchStr = line.slice(firstChordPos >= 0 ? firstChordPos : 0);
+    var r2 = /\[([A-G][^\]]*)\]([^\[]*)/g;
+    var m;
+    while ((m = r2.exec(searchStr)) !== null) {
+      chords.push({ text: m[1], offset: lyric.length });
+      lyric += m[2];
+    }
+    return { chords: chords, lyric: lyric };
+  }
+
+  function songBlockToRaw(block) {
+    if (!block.verses) return "";
+    return block.verses.map(function (v) {
+      var out = [];
+      if (v.label) out.push("[" + v.label + "]");
+      v.pairs.forEach(function (p) {
+        if (p.chords.length) {
+          var inlineLine = "";
+          var lyric = p.lyric || "";
+          var lastPos = 0;
+          var sorted = p.chords.slice().sort(function (a, b) { return a.offset - b.offset; });
+          sorted.forEach(function (c) {
+            inlineLine += lyric.slice(lastPos, c.offset) + "[" + c.text + "]";
+            lastPos = c.offset;
+          });
+          inlineLine += lyric.slice(lastPos);
+          out.push(inlineLine);
+        } else {
+          out.push(p.lyric || "");
+        }
+      });
+      return out.join("\n");
+    }).join("\n\n");
+  }
+
+  // ---- Chord diagram library ----
+  // Format: [frets, fingers] where frets = [e,B,G,D,A,E] (high to low)
+  // fret number = finger position, 0 = open, -1 = muted, 'b' = barre
+  // Each entry: { frets: [6 values], barre: fret_number|null, baseFret: 1|n }
+  var CHORD_LIBRARY = {
+    "C":    { frets: [0,1,0,2,3,-1], baseFret: 1 },
+    "Cm":   { frets: [3,4,5,5,3,3], baseFret: 3, barre: 3 },
+    "C7":   { frets: [0,1,3,2,3,-1], baseFret: 1 },
+    "Cmaj7":{ frets: [0,0,0,2,3,-1], baseFret: 1 },
+    "D":    { frets: [2,3,2,0,-1,-1], baseFret: 1 },
+    "Dm":   { frets: [1,3,2,0,-1,-1], baseFret: 1 },
+    "D7":   { frets: [2,1,2,0,-1,-1], baseFret: 1 },
+    "Dmaj7":{ frets: [2,2,2,0,-1,-1], baseFret: 1 },
+    "Dsus2":{ frets: [0,3,2,0,-1,-1], baseFret: 1 },
+    "Dsus4":{ frets: [3,3,2,0,-1,-1], baseFret: 1 },
+    "E":    { frets: [0,0,1,2,2,0], baseFret: 1 },
+    "Em":   { frets: [0,0,0,2,2,0], baseFret: 1 },
+    "E7":   { frets: [0,0,1,0,2,0], baseFret: 1 },
+    "Emaj7":{ frets: [0,0,1,1,2,0], baseFret: 1 },
+    "Esus4":{ frets: [0,0,2,2,2,0], baseFret: 1 },
+    "F":    { frets: [1,1,2,3,3,1], baseFret: 1, barre: 1 },
+    "Fm":   { frets: [1,1,1,3,3,1], baseFret: 1, barre: 1 },
+    "F7":   { frets: [1,1,2,1,3,1], baseFret: 1, barre: 1 },
+    "Fmaj7":{ frets: [0,1,2,3,3,1], baseFret: 1 },
+    "G":    { frets: [3,0,0,0,2,3], baseFret: 1 },
+    "Gm":   { frets: [3,3,3,5,5,3], baseFret: 3, barre: 3 },
+    "G7":   { frets: [1,0,0,0,2,3], baseFret: 1 },
+    "Gmaj7":{ frets: [2,0,0,0,2,3], baseFret: 1 },
+    "Gsus4":{ frets: [3,1,0,0,2,3], baseFret: 1 },
+    "A":    { frets: [0,2,2,2,0,-1], baseFret: 1 },
+    "Am":   { frets: [0,1,2,2,0,-1], baseFret: 1 },
+    "A7":   { frets: [0,2,0,2,0,-1], baseFret: 1 },
+    "Amaj7":{ frets: [0,2,1,2,0,-1], baseFret: 1 },
+    "Asus2":{ frets: [0,0,2,2,0,-1], baseFret: 1 },
+    "Asus4":{ frets: [0,3,2,2,0,-1], baseFret: 1 },
+    "B":    { frets: [2,4,4,4,2,2], baseFret: 2, barre: 2 },
+    "Bm":   { frets: [2,3,4,4,2,2], baseFret: 2, barre: 2 },
+    "B7":   { frets: [2,0,2,1,2,-1], baseFret: 1 },
+    "Cadd9":{ frets: [0,3,0,2,3,-1], baseFret: 1 },
+    "Gadd9":{ frets: [3,0,2,0,2,3], baseFret: 1 },
+    "Em7":  { frets: [0,0,0,2,2,0], baseFret: 1 },
+    "Am7":  { frets: [0,1,0,2,0,-1], baseFret: 1 },
+    "Dm7":  { frets: [1,1,2,0,-1,-1], baseFret: 1 },
+    "Bm7":  { frets: [2,2,2,4,2,2], baseFret: 2, barre: 2 },
+  };
+
+  function getUniqueChordsFromBlock(block) {
+    var seen = {};
+    var order = [];
+    (block.verses || []).forEach(function (verse) {
+      (verse.pairs || []).forEach(function (pair) {
+        (pair.chords || []).forEach(function (c) {
+          if (c.text && !seen[c.text]) {
+            seen[c.text] = true;
+            order.push(c.text);
+          }
+        });
+      });
+    });
+    return order;
+  }
+
+  function buildChordDiagramSVG(chordName, scale) {
+    scale = scale || 1;
+    var data = CHORD_LIBRARY[chordName];
+    if (!data) return null;
+
+    // Reverse frets so low E (index 5) is on the left
+    var frets = data.frets.slice().reverse();
+    var barre = data.barre || null;
+    var baseFret = data.baseFret || 1;
+
+    var strings = 6;
+    var numFrets = 4;
+    var cellW = 14 * scale;
+    var cellH = 13 * scale;
+    var padL = 10 * scale;
+    var padT = 12 * scale;
+    var padB = 4 * scale;
+    var dotR = 4.5 * scale;
+    var w = padL + (strings - 1) * cellW + padL;
+    var h = padT + numFrets * cellH + padB;
+
+    var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", "0 0 " + w + " " + h);
+    svg.setAttribute("width", w);
+    svg.setAttribute("height", h);
+
+    function el(tag, attrs) {
+      var e = document.createElementNS("http://www.w3.org/2000/svg", tag);
+      Object.keys(attrs).forEach(function (k) { e.setAttribute(k, attrs[k]); });
+      return e;
+    }
+
+    // Nut or baseFret indicator
+    if (baseFret === 1) {
+      svg.appendChild(el("rect", { x: padL, y: padT - 3 * scale, width: (strings - 1) * cellW, height: 3 * scale, fill: "#3D332A", rx: 1 }));
+    } else {
+      var txt = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      txt.setAttribute("x", padL - 5 * scale);
+      txt.setAttribute("y", padT + cellH * 0.65);
+      txt.setAttribute("font-size", 7 * scale);
+      txt.setAttribute("fill", "#8A7D68");
+      txt.setAttribute("text-anchor", "end");
+      txt.setAttribute("font-family", "Inter, sans-serif");
+      txt.textContent = baseFret + "fr";
+      svg.appendChild(txt);
+    }
+
+    // Fret lines
+    for (var f = 0; f <= numFrets; f++) {
+      svg.appendChild(el("line", {
+        x1: padL, y1: padT + f * cellH,
+        x2: padL + (strings - 1) * cellW, y2: padT + f * cellH,
+        stroke: "#C4B8A4", "stroke-width": scale
+      }));
+    }
+
+    // String lines
+    for (var s = 0; s < strings; s++) {
+      svg.appendChild(el("line", {
+        x1: padL + s * cellW, y1: padT,
+        x2: padL + s * cellW, y2: padT + numFrets * cellH,
+        stroke: "#C4B8A4", "stroke-width": scale
+      }));
+    }
+
+    // Open / muted markers above nut
+    frets.forEach(function (fret, si) {
+      var x = padL + si * cellW;
+      var y = padT - 6 * scale;
+      if (fret === 0) {
+        svg.appendChild(el("circle", { cx: x, cy: y, r: 2.5 * scale, fill: "none", stroke: "#8A7D68", "stroke-width": scale }));
+      } else if (fret === -1) {
+        svg.appendChild(el("text", { x: x, y: y + 2 * scale, "font-size": 7 * scale, fill: "#8A7D68", "text-anchor": "middle", "font-family": "Inter, sans-serif" }));
+        var xt = el("text", { x: x, y: y + 2.5 * scale, "font-size": 7 * scale, fill: "#8A7D68", "text-anchor": "middle", "font-family": "Inter, sans-serif" });
+        xt.textContent = "×";
+        svg.appendChild(xt);
+      }
+    });
+
+    // Barre
+    if (barre !== null) {
+      var barreRelFret = barre - baseFret + 1;
+      var by = padT + (barreRelFret - 0.5) * cellH;
+      var barreStrings = frets.map(function (f, i) { return f === barre ? i : -1; }).filter(function (i) { return i >= 0; });
+      if (barreStrings.length >= 2) {
+        var bx1 = padL + barreStrings[0] * cellW;
+        var bx2 = padL + barreStrings[barreStrings.length - 1] * cellW;
+        svg.appendChild(el("rect", { x: bx1, y: by - 4 * scale, width: bx2 - bx1, height: 8 * scale, rx: 4 * scale, fill: "#3D332A" }));
+      }
+    }
+
+    // Finger dots
+    frets.forEach(function (fret, si) {
+      if (fret <= 0) return;
+      if (barre !== null && fret === barre) return; // covered by barre bar
+      var relFret = fret - baseFret + 1;
+      var cx = padL + si * cellW;
+      var cy = padT + (relFret - 0.5) * cellH;
+      svg.appendChild(el("circle", { cx: cx, cy: cy, r: dotR, fill: "#3D332A" }));
+    });
+
+    return svg;
+  }
+
+  function buildChordDiagramRow(chordNames, scale, extraClass) {
+    var row = document.createElement("div");
+    row.className = "chord-diagram-row" + (extraClass ? " " + extraClass : "");
+    chordNames.forEach(function (name) {
+      var svg = buildChordDiagramSVG(name, scale);
+      if (!svg) return; // unknown chord — skip
+      var wrap = document.createElement("div");
+      wrap.className = "chord-diagram" + (extraClass ? " perf-chord-diagram" : "");
+      var label = document.createElement("div");
+      label.className = "chord-diagram-name";
+      label.textContent = name;
+      wrap.appendChild(svg);
+      wrap.appendChild(label);
+      row.appendChild(wrap);
+    });
+    return row.children.length ? row : null;
+  }
+
+  // ---- Render a song block ----
+  function renderSongBlock(block, blockEl) {
+    var inner = blockEl.querySelector(".song-block-inner");
+    inner.innerHTML = "";
+
+    // Performance button at top of block
+    var perfBtn = document.createElement("button");
+    perfBtn.className = "song-perf-btn";
+    perfBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5,3 19,12 5,21" fill="currentColor" stroke="none"/></svg> Performance';
+    perfBtn.title = "Full screen performance mode";
+    perfBtn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      openPerfMode(block);
+    });
+    inner.appendChild(perfBtn);
+
+    // Song title and artist fields
+    var meta = document.createElement("div");
+    meta.className = "song-meta";
+    var titleInput = document.createElement("input");
+    titleInput.className = "song-title-input";
+    titleInput.placeholder = "Song title";
+    titleInput.value = block.songTitle || "";
+    titleInput.addEventListener("pointerdown", function (e) { e.stopPropagation(); });
+    titleInput.addEventListener("input", function () {
+      block.songTitle = titleInput.value;
+      saveBlocksToCard(getActiveCard()); saveState();
+    });
+    var artistInput = document.createElement("input");
+    artistInput.className = "song-artist-input";
+    artistInput.placeholder = "Artist / writer";
+    artistInput.value = block.songArtist || "";
+    artistInput.addEventListener("pointerdown", function (e) { e.stopPropagation(); });
+    artistInput.addEventListener("input", function () {
+      block.songArtist = artistInput.value;
+      saveBlocksToCard(getActiveCard()); saveState();
+    });
+    meta.appendChild(titleInput);
+    meta.appendChild(artistInput);
+    var metaDivider = document.createElement("hr");
+    metaDivider.className = "song-meta-divider";
+    inner.appendChild(meta);
+    inner.appendChild(metaDivider);
+
+    var editBar = document.createElement("div");
+    editBar.className = "song-edit-bar";
+
+    if (!block.verses || !block.verses.length) {
+      // Empty state
+      var empty = document.createElement("div");
+      empty.className = "song-empty-state";
+      empty.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" style="width:28px;height:28px;color:var(--ink-faint)"><path d="M9 18V5l10-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg><span>Paste chords + lyrics or type below</span>';
+      var pasteBtn = document.createElement("button");
+      pasteBtn.className = "song-paste-btn";
+      pasteBtn.textContent = "Paste from clipboard";
+      pasteBtn.addEventListener("click", function () {
+        navigator.clipboard.readText().then(function (text) {
+          block.verses = parseUGRaw(text);
+          saveBlocksToCard(getActiveCard());
+          saveState();
+          renderSongBlock(block, blockEl);
+        }).catch(function () {
+          showSongRawEditor(block, blockEl);
+        });
+      });
+      empty.appendChild(pasteBtn);
+      inner.appendChild(empty);
+
+      editBar.appendChild(makeRawEditBtn(block, blockEl));
+      inner.appendChild(editBar);
+      return;
+    }
+
+    // Chord diagram reference row
+    var uniqueChords = getUniqueChordsFromBlock(block);
+    var diagramRow = buildChordDiagramRow(uniqueChords, 1, null);
+    if (diagramRow) inner.appendChild(diagramRow);
+
+    // Render verses
+    var renderArea = document.createElement("div");
+    renderArea.className = "song-render";
+
+    block.verses.forEach(function (verse, vi) {
+      var verseEl = document.createElement("div");
+      verseEl.className = "song-verse";
+
+      // Verse header: label input + merge + delete
+      var verseHeader = document.createElement("div");
+      verseHeader.className = "song-verse-header";
+
+      var labelInput = document.createElement("input");
+      labelInput.className = "song-verse-label-input";
+      labelInput.placeholder = "Section label…";
+      labelInput.value = verse.label || "";
+      labelInput.addEventListener("pointerdown", function (e) { e.stopPropagation(); });
+      labelInput.addEventListener("input", function () {
+        verse.label = labelInput.value.trim() || null;
+        saveBlocksToCard(getActiveCard()); saveState();
+      });
+      verseHeader.appendChild(labelInput);
+
+      // Merge with next verse button
+      if (vi < block.verses.length - 1) {
+        var mergeBtn = document.createElement("button");
+        mergeBtn.className = "song-verse-btn";
+        mergeBtn.title = "Merge with verse below";
+        mergeBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg> Merge';
+        mergeBtn.addEventListener("click", function (e) {
+          e.stopPropagation();
+          // Append next verse's pairs into this one
+          var next = block.verses[vi + 1];
+          verse.pairs = verse.pairs.concat(next.pairs);
+          block.verses.splice(vi + 1, 1);
+          saveBlocksToCard(getActiveCard()); saveState();
+          renderSongBlock(block, blockEl);
+        });
+        verseHeader.appendChild(mergeBtn);
+      }
+
+      // Delete verse button
+      var delBtn = document.createElement("button");
+      delBtn.className = "song-verse-btn delete";
+      delBtn.title = "Delete this verse";
+      delBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg> Delete';
+      delBtn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        block.verses.splice(vi, 1);
+        saveBlocksToCard(getActiveCard()); saveState();
+        renderSongBlock(block, blockEl);
+      });
+      verseHeader.appendChild(delBtn);
+
+      verseEl.appendChild(verseHeader);
+
+      verse.pairs.forEach(function (pair, pi) {
+        var pairEl = document.createElement("div");
+        pairEl.className = "song-pair";
+
+        var lyric = pair.lyric || "";
+        var sorted = (pair.chords || []).slice().sort(function (a, b) { return a.offset - b.offset; });
+
+        // Build chord line as plain spaced text (monospace keeps alignment)
+        var chordLine = document.createElement("div");
+        chordLine.className = "song-chord-line";
+        chordLine.style.color = "#A14C5A";
+
+        if (sorted.length) {
+          var chordStr = "";
+          var pos = 0;
+          sorted.forEach(function (chord) {
+            var spaces = chord.offset - pos;
+            if (spaces > 0) chordStr += Array(spaces + 1).join(" ");
+            chordStr += chord.text;
+            pos = chord.offset + chord.text.length;
+          });
+          chordLine.textContent = chordStr;
+        }
+        // If no chords, chord line is empty — it won't render, so only lyric shows
+
+        // Lyric line — plain div, non-editable for simplicity
+        var lyricLine = document.createElement("div");
+        lyricLine.className = "song-lyric-line";
+        lyricLine.textContent = lyric || "\u00a0";
+        lyricLine.style.userSelect = "text";
+        lyricLine.style.webkitUserSelect = "text";
+
+        if (sorted.length) pairEl.appendChild(chordLine);
+        pairEl.appendChild(lyricLine);
+        verseEl.appendChild(pairEl);
+      });
+
+      renderArea.appendChild(verseEl);
+    });
+
+    inner.appendChild(renderArea);
+
+    // Edit bar
+    editBar.appendChild(makeRawEditBtn(block, blockEl));
+    inner.appendChild(editBar);
+  }
+
+  function refocusChord(blockEl, vi, pi, ci) {
+    var token = blockEl.querySelector('.song-chord-token[data-vi="' + vi + '"][data-pi="' + pi + '"][data-ci="' + ci + '"]');
+    if (token) { token.classList.add("focused"); token.focus(); }
+  }
+
+  function makeRawEditBtn(block, blockEl) {
+    var btn = document.createElement("button");
+    btn.className = "song-action-btn";
+    btn.textContent = block.verses && block.verses.length ? "Edit raw" : "Type markup";
+    btn.addEventListener("click", function () { showSongRawEditor(block, blockEl); });
+    return btn;
+  }
+
+  function showSongRawEditor(block, blockEl) {
+    var inner = blockEl.querySelector(".song-block-inner");
+    inner.innerHTML = "";
+
+    var ta = document.createElement("textarea");
+    ta.className = "song-raw-editor";
+    ta.placeholder = "[Verse 1]\n[G]Here comes the [C]sun\n[G]Little darling\n\n[Chorus]\n[D]It's alright";
+    ta.value = songBlockToRaw(block);
+    ta.style.userSelect = "text";
+    ta.style.webkitUserSelect = "text";
+    inner.appendChild(ta);
+
+    var bar = document.createElement("div");
+    bar.className = "song-edit-bar";
+    var doneBtn = document.createElement("button");
+    doneBtn.className = "song-paste-btn";
+    doneBtn.textContent = "Done";
+    doneBtn.addEventListener("click", function () {
+      block.verses = parseUGRaw(ta.value);
+      saveBlocksToCard(getActiveCard()); saveState();
+      renderSongBlock(block, blockEl);
+    });
+    bar.appendChild(doneBtn);
+    inner.appendChild(bar);
+    ta.focus();
+  }
+
+  function getActiveCard() {
+    return activeCardId ? state.cards.filter(function (c) { return c.id === activeCardId; })[0] : null;
+  }
+
+  // ---- Block drag auto-scroll ----
+  var blockScrollRaf = null;
+  var blockScrollClientY = 0;
+  function startBlockAutoScroll(clientY) {
+    blockScrollClientY = clientY;
+    if (blockScrollRaf) return; // already running — just update clientY above
+    var container = document.getElementById("blocks-container");
+    if (!container) return;
+    function step() {
+      var rect = container.getBoundingClientRect();
+      var zone = 80;
+      var speed = 0;
+      if (blockScrollClientY < rect.top + zone) {
+        speed = -((zone - (blockScrollClientY - rect.top)) / zone) * 32;
+      } else if (blockScrollClientY > rect.bottom - zone) {
+        speed = ((zone - (rect.bottom - blockScrollClientY)) / zone) * 32;
+      }
+      if (speed !== 0) container.scrollTop += speed;
+      blockScrollRaf = requestAnimationFrame(step);
+    }
+    blockScrollRaf = requestAnimationFrame(step);
+  }
+  function stopBlockAutoScroll() {
+    if (blockScrollRaf) { cancelAnimationFrame(blockScrollRaf); blockScrollRaf = null; }
+  }
+
+  // ---- Build a block DOM element ----
+  function createBlockEl(block, card) {
+    var blockEl = document.createElement("div");
+    blockEl.className = "card-block block-" + block.type;
+    blockEl.dataset.blockId = block.id;
+
+    // Drag handle
+    var handle = document.createElement("div");
+    handle.className = "block-drag-handle";
+    handle.innerHTML = '<svg viewBox="0 0 10 16" fill="currentColor"><circle cx="3" cy="3" r="1.2"/><circle cx="7" cy="3" r="1.2"/><circle cx="3" cy="8" r="1.2"/><circle cx="7" cy="8" r="1.2"/><circle cx="3" cy="13" r="1.2"/><circle cx="7" cy="13" r="1.2"/></svg>';
+    handle.setAttribute("draggable", "true");
+    blockEl.appendChild(handle);
+
+    // Remove button
+    var removeBtn = document.createElement("button");
+    removeBtn.className = "block-remove-btn";
+    removeBtn.innerHTML = "&times;";
+    removeBtn.title = "Remove block";
+    removeBtn.addEventListener("click", function () {
+      card.blocks = card.blocks.filter(function (b) { return b.id !== block.id; });
+      saveBlocksToCard(card); saveState(); refreshCanvas();
+      renderBlocksContainer(card);
+    });
+    blockEl.appendChild(removeBtn);
+
+    if (block.type === "text") {
+      var ta = document.createElement("textarea");
+      ta.placeholder = "Notes…";
+      ta.value = block.content || "";
+      ta.style.userSelect = "text";
+      ta.style.webkitUserSelect = "text";
+      ta.addEventListener("input", function () {
+        block.content = ta.value;
+        autoResizeTextarea(ta);
+        saveBlocksToCard(card); saveState();
+      });
+      ta.addEventListener("keydown", function (e) {
+        handleTextBlockKeydown(e, ta, block, card);
+      });
+      ta.addEventListener("click", function () {
+        handleTextBlockClick(ta, block);
+      });
+      blockEl.appendChild(ta);
+      setTimeout(function () { autoResizeTextarea(ta); }, 0);
+
+    } else if (block.type === "image") {
+      block.images = block.images || [];
+      var gallery = document.createElement("div");
+      gallery.className = "block-image-gallery";
+      renderImageBlockGallery(gallery, block, card);
+      blockEl.appendChild(gallery);
+
+    } else if (block.type === "song") {
+      var inner = document.createElement("div");
+      inner.className = "song-block-inner";
+      blockEl.appendChild(inner);
+      renderSongBlock(block, blockEl);
+    } else if (block.type === "video") {
+      var inner = document.createElement("div");
+      inner.className = "video-block-inner";
+      blockEl.appendChild(inner);
+      renderVideoBlock(block, blockEl);
+    }
+
+    // Drag-to-reorder via HTML5 drag (native scroll support)
+    handle.setAttribute("draggable", "true");
+    handle.addEventListener("dragstart", function (e) {
+      e.dataTransfer.setData("text/plain", block.id);
+      e.dataTransfer.effectAllowed = "move";
+      setTimeout(function () { blockEl.classList.add("dragging"); }, 0);
+    });
+    handle.addEventListener("dragend", function () {
+      blockEl.classList.remove("dragging");
+      var container = document.getElementById("blocks-container");
+      if (container) {
+        container.querySelectorAll(".card-block").forEach(function (el) {
+          el.classList.remove("drag-over-above", "drag-over-below");
+        });
+        var ind = container.querySelector(".block-drop-indicator");
+        if (ind) ind.parentNode.removeChild(ind);
+      }
+    });
+
+    return blockEl;
+  }
+
+  function renderImageBlockGallery(gallery, block, card) {
+    gallery.innerHTML = "";
+    (block.images || []).forEach(function (imgObj) {
+      var thumb = document.createElement("div");
+      thumb.className = "card-image-thumb";
+      var imgTag = document.createElement("img");
+      imgTag.src = imgObj.src;
+      thumb.appendChild(imgTag);
+      var removeBtn = document.createElement("button");
+      removeBtn.className = "thumb-remove";
+      removeBtn.textContent = "\u00d7";
+      removeBtn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        block.images = block.images.filter(function (im) { return im.id !== imgObj.id; });
+        saveBlocksToCard(card); saveState(); refreshCanvas();
+        renderImageBlockGallery(gallery, block, card);
+      });
+      thumb.appendChild(removeBtn);
+      gallery.appendChild(thumb);
+    });
+
+    // Add image button
+    var addBtn = document.createElement("label");
+    addBtn.className = "block-image-add";
+    addBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>';
+    var inp = document.createElement("input");
+    inp.type = "file"; inp.accept = "image/*"; inp.hidden = true;
+    inp.addEventListener("change", function (e) {
+      var files = Array.from(e.target.files);
+      var pending = files.length;
+      if (!pending) return;
+      files.forEach(function (file) {
+        var reader = new FileReader();
+        reader.onload = function (ev) {
+          block.images = block.images || [];
+          block.images.push({ id: uid(), src: ev.target.result });
+          pending--;
+          if (!pending) {
+            saveBlocksToCard(card); saveState(); refreshCanvas();
+            renderImageBlockGallery(gallery, block, card);
+          }
+        };
+        reader.readAsDataURL(file);
+      });
+      inp.value = "";
+    });
+    addBtn.appendChild(inp);
+    gallery.appendChild(addBtn);
+  }
+
+  function autoResizeTextarea(ta) {
+    ta.style.height = "auto";
+    ta.style.height = ta.scrollHeight + "px";
+  }
+
+  function handleTextBlockKeydown(e, ta, block, card) {
+    if (e.key !== "Enter") return;
+    var pos = ta.selectionStart;
+    var text = ta.value;
+    var lineStart = text.lastIndexOf("\n", pos - 1) + 1;
+    var currentLine = text.slice(lineStart, pos);
+    var checkMatch = currentLine.match(/^(\[[ x]\]\s)/);
+    var bulletMatch = currentLine.match(/^(-\s)/);
+    var prefix = checkMatch ? "[ ] " : (bulletMatch ? "- " : null);
+    if (!prefix) return;
+    var matchedLength = checkMatch ? checkMatch[0].length : bulletMatch[0].length;
+    if (currentLine.slice(matchedLength).trim() === "") {
+      e.preventDefault();
+      var before = text.slice(0, lineStart);
+      var after = text.slice(pos);
+      ta.value = before + after;
+      ta.selectionStart = ta.selectionEnd = lineStart;
+      block.content = ta.value;
+      return;
+    }
+    e.preventDefault();
+    var insertion = "\n" + prefix;
+    ta.value = text.slice(0, pos) + insertion + text.slice(pos);
+    ta.selectionStart = ta.selectionEnd = pos + insertion.length;
+    block.content = ta.value;
+    autoResizeTextarea(ta);
+  }
+
+  function handleTextBlockClick(ta, block) {
+    var pos = ta.selectionStart;
+    var text = ta.value;
+    var lineStart = text.lastIndexOf("\n", pos - 1) + 1;
+    var lineEnd = text.indexOf("\n", pos);
+    if (lineEnd === -1) lineEnd = text.length;
+    var line = text.slice(lineStart, lineEnd);
+    var match = line.match(/^\[([ x])\]/);
+    if (match && (pos - lineStart) <= 3) {
+      var newChar = match[1] === " " ? "x" : " ";
+      var newLine = "[" + newChar + "]" + line.slice(3);
+      ta.value = text.slice(0, lineStart) + newLine + text.slice(lineEnd);
+      block.content = ta.value;
+      saveState();
+    }
+  }
+
+  function insertIntoFocusedTextBlock(prefix) {
+    var container = document.getElementById("blocks-container");
+    var ta = container.querySelector(".block-text textarea:focus");
+    if (!ta) {
+      // Insert into first text block or create one
+      var firstText = container.querySelector(".block-text textarea");
+      if (firstText) { firstText.focus(); ta = firstText; }
+      else { addBlock("text"); return; }
+    }
+    ta.focus();
+    var pos = ta.selectionStart;
+    var text = ta.value;
+    var needsNewline = pos > 0 && text.charAt(pos - 1) !== "\n";
+    var insertion = (needsNewline ? "\n" : "") + prefix;
+    ta.value = text.slice(0, pos) + insertion + text.slice(pos);
+    var newPos = pos + insertion.length;
+    ta.selectionStart = ta.selectionEnd = newPos;
+    ta.dispatchEvent(new Event("input"));
+  }
+
+  function addBlock(type) {
+    var card = getActiveCard();
+    if (!card) return;
+    var block = { id: uid(), type: type };
+    if (type === "text") block.content = "";
+    if (type === "image") block.images = [];
+    if (type === "song") block.verses = [];
+    if (type === "video") { block.videoId = null; block.videoUrl = ""; }
+    card.blocks.push(block);
+    saveBlocksToCard(card); saveState(); refreshCanvas();
+    renderBlocksContainer(card);
+    // Focus the new block
+    setTimeout(function () {
+      var container = document.getElementById("blocks-container");
+      var newEl = container.querySelector('.card-block[data-block-id="' + block.id + '"]');
+      if (!newEl) return;
+      if (type === "text") {
+        var ta = newEl.querySelector("textarea");
+        if (ta) ta.focus();
+      } else if (type === "song") {
+        newEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+    }, 50);
+  }
+
+  function renderBlocksContainer(card) {
+    // Replace container to clear all previous event listeners
+    var old = document.getElementById("blocks-container");
+    var container = old.cloneNode(false);
+    old.parentNode.replaceChild(container, old);
+    container.innerHTML = "";
+
+    (card.blocks || []).forEach(function (block) {
+      container.appendChild(createBlockEl(block, card));
+    });
+
+    var draggedBlockId = null;
+
+    container.addEventListener("dragover", function (e) {
+      e.preventDefault();
+      // Clear old indicators
+      container.querySelectorAll(".block-drop-indicator").forEach(function(el) { el.parentNode.removeChild(el); });
+      container.querySelectorAll(".card-block").forEach(function(el) { el.classList.remove("drag-over-above","drag-over-below"); });
+
+      var blocks = Array.from(container.querySelectorAll(".card-block:not(.dragging)"));
+      if (!blocks.length) return;
+      var best = null, bestDist = Infinity;
+      blocks.forEach(function (el) {
+        var r = el.getBoundingClientRect();
+        var dist = Math.abs(e.clientY - (r.top + r.height / 2));
+        if (dist < bestDist) { bestDist = dist; best = el; }
+      });
+      if (!best) return;
+      var br = best.getBoundingClientRect();
+      var above = e.clientY < br.top + Math.min(40, br.height * 0.35);
+      var ind = document.createElement("div");
+      ind.className = "block-drop-indicator";
+      ind.style.cssText = "height:3px;background:#A14C5A;border-radius:2px;margin:2px 0;pointer-events:none;";
+      container.insertBefore(ind, above ? best : best.nextSibling);
+      best.dataset.dropTarget = above ? "above" : "below";
+    });
+
+    container.addEventListener("drop", function (e) {
+      e.preventDefault();
+      container.querySelectorAll(".block-drop-indicator").forEach(function(el) { el.parentNode.removeChild(el); });
+      var fromId = e.dataTransfer.getData("text/plain");
+      if (!fromId) return;
+      var target = container.querySelector(".card-block[data-drop-target]");
+      if (!target) return;
+      var above = target.dataset.dropTarget === "above";
+      var targetId = target.dataset.blockId;
+      delete target.dataset.dropTarget;
+      if (fromId === targetId) return;
+      var fromIdx = card.blocks.findIndex(function(b) { return b.id === fromId; });
+      var toIdx   = card.blocks.findIndex(function(b) { return b.id === targetId; });
+      if (fromIdx === -1 || toIdx === -1) return;
+      var moved = card.blocks.splice(fromIdx, 1)[0];
+      var newTo = card.blocks.findIndex(function(b) { return b.id === targetId; });
+      card.blocks.splice(above ? newTo : newTo + 1, 0, moved);
+      saveBlocksToCard(card); saveState(); refreshCanvas();
+      renderBlocksContainer(card);
+    });
+  }
+
   // ---- Modal ----
   function openCard(id) {
     activeCardId = id;
     var card = state.cards.filter(function (c) { return c.id === id; })[0];
-    card.images = card.images || [];
+    migrateCardToBlocks(card);
     modalTitle.value = card.title || "";
-    modalNotes.value = card.notes || "";
     catSwatches.forEach(function (sw) {
       sw.classList.toggle("selected", sw.dataset.cat === card.category);
     });
@@ -2806,7 +4932,7 @@
       modal.style.width = state.modalSize.width + "px";
       modal.style.height = state.modalSize.height + "px";
     }
-    renderCardImageGallery(card);
+    renderBlocksContainer(card);
     modalDelete.classList.remove("hidden");
     document.getElementById("delete-confirm").classList.add("hidden");
     overlay.classList.add("open");
@@ -2879,7 +5005,7 @@
 
     if (card) {
       card.title = modalTitle.value;
-      card.notes = modalNotes.value;
+      saveBlocksToCard(card);
       var selected = document.querySelector(".cat-icon-btn.selected");
       if (selected) card.category = selected.dataset.cat;
       saveState();
@@ -2921,6 +5047,139 @@
   }
 
   document.getElementById("modal-close").addEventListener("click", closeModal);
+
+  // ---- Performance mode ----
+  var perfOverlay = document.getElementById("perf-overlay");
+  var perfSongTitle = document.getElementById("perf-song-title");
+  var perfSongArtist = document.getElementById("perf-song-artist");
+  var perfColumns = document.getElementById("perf-columns");
+  var perfDiagrams = document.getElementById("perf-diagrams");
+
+  function openPerfMode(songBlock) {
+    var card = getActiveCard();
+    if (!card) return;
+    migrateCardToBlocks(card);
+
+    perfSongTitle.textContent = (songBlock && songBlock.songTitle) ? songBlock.songTitle : (card.title || "Untitled");
+    perfSongArtist.textContent = (songBlock && songBlock.songArtist) ? songBlock.songArtist : "";
+
+    // Chord diagrams inline in header
+    perfDiagrams.innerHTML = "";
+    if (songBlock) {
+      var uniqueChords = getUniqueChordsFromBlock(songBlock);
+      uniqueChords.forEach(function (name) {
+        var svg = buildChordDiagramSVG(name, 0.85);
+        if (!svg) return;
+        var wrap = document.createElement("div");
+        wrap.className = "chord-diagram perf-chord-diagram";
+        var label = document.createElement("div");
+        label.className = "chord-diagram-name";
+        label.textContent = name;
+        wrap.appendChild(svg);
+        wrap.appendChild(label);
+        perfDiagrams.appendChild(wrap);
+      });
+    }
+
+    // Use the specific song block if passed, else collect all song blocks
+    var units = [];
+    if (songBlock && songBlock.verses && songBlock.verses.length) {
+      songBlock.verses.forEach(function (v) { units.push({ kind: "verse", verse: v }); });
+    } else {
+      (card.blocks || []).forEach(function (block) {
+        if (block.type === "song" && block.verses && block.verses.length) {
+          block.verses.forEach(function (v) { units.push({ kind: "verse", verse: v }); });
+        } else if (block.type === "text" && block.content && block.content.trim()) {
+          units.push({ kind: "text", content: block.content });
+        }
+      });
+    }
+
+    // Split into three balanced columns by unit count
+    var third = Math.ceil(units.length / 3);
+    var cols = [units.slice(0, third), units.slice(third, third * 2), units.slice(third * 2)];
+
+    perfColumns.innerHTML = "";
+    cols.forEach(function (colUnits) {
+      var col = document.createElement("div");
+      col.className = "perf-col";
+      colUnits.forEach(function (unit) {
+        if (unit.kind === "verse") {
+          col.appendChild(renderPerfVerse(unit.verse));
+        } else {
+          var el = document.createElement("div");
+          el.className = "perf-text-block";
+          el.textContent = unit.content;
+          col.appendChild(el);
+        }
+      });
+      perfColumns.appendChild(col);
+    });
+
+    perfOverlay.classList.add("open");
+
+    // Request fullscreen
+    if (perfOverlay.requestFullscreen) perfOverlay.requestFullscreen().catch(function(){});
+    else if (perfOverlay.webkitRequestFullscreen) perfOverlay.webkitRequestFullscreen();
+  }
+
+  function renderPerfVerse(verse) {
+    var verseEl = document.createElement("div");
+    verseEl.className = "perf-verse";
+    if (verse.label) {
+      var label = document.createElement("div");
+      label.className = "perf-section-label";
+      label.textContent = verse.label;
+      verseEl.appendChild(label);
+    }
+    (verse.pairs || []).forEach(function (pair) {
+      var pairEl = document.createElement("div");
+      pairEl.className = "perf-pair";
+
+      var chordLine = document.createElement("div");
+      chordLine.className = "perf-chord-line";
+      chordLine.style.color = "#A14C5A";
+      var lyric = pair.lyric || "";
+      var sorted = (pair.chords || []).slice().sort(function (a, b) { return a.offset - b.offset; });
+      if (sorted.length) {
+        var chordStr = "";
+        var pos = 0;
+        sorted.forEach(function (chord) {
+          var spaces = chord.offset - pos;
+          if (spaces > 0) chordStr += Array(spaces + 1).join(" ");
+          chordStr += chord.text;
+          pos = chord.offset + chord.text.length;
+        });
+        chordLine.textContent = chordStr;
+        pairEl.appendChild(chordLine);
+      }
+
+      var lyricLine = document.createElement("div");
+      lyricLine.className = "perf-lyric-line";
+      lyricLine.textContent = lyric || "\u00a0";
+
+      pairEl.appendChild(chordLine);
+      pairEl.appendChild(lyricLine);
+      verseEl.appendChild(pairEl);
+    });
+    return verseEl;
+  }
+
+  function closePerfMode() {
+    perfOverlay.classList.remove("open");
+    if (document.fullscreenElement) document.exitFullscreen().catch(function(){});
+    else if (document.webkitFullscreenElement) document.webkitExitFullscreen();
+  }
+
+  document.getElementById("perf-close").addEventListener("click", closePerfMode);
+  document.addEventListener("fullscreenchange", function () {
+    if (!document.fullscreenElement) perfOverlay.classList.remove("open");
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && perfOverlay.classList.contains("open")) {
+      closePerfMode();
+    }
+  });
   overlay.addEventListener("pointerdown", function (e) {
     if (e.target === overlay) closeModal();
   });
@@ -2960,93 +5219,13 @@
     modalResizeHandle.addEventListener("pointerup", up);
   });
 
-  // ---- Notes formatting: bullets and checklists ----
-  function insertListPrefix(prefix) {
-    var el = modalNotes;
-    el.focus();
-    var pos = el.selectionStart;
-    var text = el.value;
-    var needsNewline = pos > 0 && text.charAt(pos - 1) !== "\n";
-    var insertion = (needsNewline ? "\n" : "") + prefix;
-    el.value = text.slice(0, pos) + insertion + text.slice(pos);
-    var newPos = pos + insertion.length;
-    el.selectionStart = el.selectionEnd = newPos;
-  }
-
-  document.getElementById("btn-heading").addEventListener("click", function () {
-    insertListPrefix("## ");
-  });
-
-  document.getElementById("btn-bullet").addEventListener("click", function () {
-    insertListPrefix("- ");
-  });
-
-  document.getElementById("btn-checklist").addEventListener("click", function () {
-    insertListPrefix("[ ] ");
-  });
-
-  modalNotes.addEventListener("keydown", function (e) {
-    if (e.key !== "Enter") return;
-    var el = modalNotes;
-    var pos = el.selectionStart;
-    var text = el.value;
-    var lineStart = text.lastIndexOf("\n", pos - 1) + 1;
-    var currentLine = text.slice(lineStart, pos);
-    var checkMatch = currentLine.match(/^(\[[ x]\]\s)/);
-    var bulletMatch = currentLine.match(/^(-\s)/);
-    var prefix = checkMatch ? "[ ] " : (bulletMatch ? "- " : null);
-    if (!prefix) return;
-
-    var matchedLength = checkMatch ? checkMatch[0].length : bulletMatch[0].length;
-    var contentAfterPrefix = currentLine.slice(matchedLength);
-    e.preventDefault();
-
-    if (contentAfterPrefix.trim() === "") {
-      var before = text.slice(0, lineStart);
-      var after = text.slice(pos);
-      el.value = before + after;
-      el.selectionStart = el.selectionEnd = lineStart;
-      return;
-    }
-
-    var insertion = "\n" + prefix;
-    el.value = text.slice(0, pos) + insertion + text.slice(pos);
-    el.selectionStart = el.selectionEnd = pos + insertion.length;
-  });
-
-  modalNotes.addEventListener("click", function () {
-    var el = modalNotes;
-    var pos = el.selectionStart;
-    var text = el.value;
-    var lineStart = text.lastIndexOf("\n", pos - 1) + 1;
-    var lineEnd = text.indexOf("\n", pos);
-    if (lineEnd === -1) lineEnd = text.length;
-    var line = text.slice(lineStart, lineEnd);
-    var match = line.match(/^\[([ x])\]/);
-    if (match && (pos - lineStart) <= 3) {
-      var newChar = match[1] === " " ? "x" : " ";
-      var newLine = "[" + newChar + "]" + line.slice(3);
-      el.value = text.slice(0, lineStart) + newLine + text.slice(lineEnd);
-      el.selectionStart = el.selectionEnd = pos;
-    }
-  });
-
-  // ---- Embedded images within a card ----
-  cardImageInput.addEventListener("change", function (e) {
-    var file = e.target.files[0];
-    if (!file || !activeCardId) return;
-    var reader = new FileReader();
-    reader.onload = function (ev) {
-      var card = state.cards.filter(function (c) { return c.id === activeCardId; })[0];
-      if (!card) return;
-      card.images = card.images || [];
-      card.images.push({ id: uid(), src: ev.target.result });
-      saveState();
-      renderCardImageGallery(card);
-    };
-    reader.readAsDataURL(file);
-    e.target.value = "";
-  });
+  // ---- Block toolbar handlers ----
+  document.getElementById("btn-add-text").addEventListener("click", function () { addBlock("text"); });
+  document.getElementById("btn-add-image").addEventListener("click", function () { addBlock("image"); });
+  document.getElementById("btn-add-song").addEventListener("click", function () { addBlock("song"); });
+  document.getElementById("btn-add-heading").addEventListener("click", function () { insertIntoFocusedTextBlock("## "); });
+  document.getElementById("btn-add-bullet").addEventListener("click", function () { insertIntoFocusedTextBlock("- "); });
+  document.getElementById("btn-add-checklist").addEventListener("click", function () { insertIntoFocusedTextBlock("[ ] "); });
 
   modalDelete.addEventListener("click", function () {
     modalDelete.classList.add("hidden");
@@ -3069,11 +5248,11 @@
   });
 
   // ---- Card groups (visual stacks) ----
-  var GROUP_HEADER_HEIGHT = 32;
+  var GROUP_HEADER_HEIGHT = 40;
   var GROUP_PADDING = 8;
   var GROUP_GAP = 8;
-  var GROUP_HEADER_CHROME = 70;
-  var GROUP_MIN_WIDTH = 237;
+  var GROUP_HEADER_CHROME = 160;
+  var GROUP_MIN_WIDTH = 280;
   var TABLE_ROW_HEIGHT = 32;
   var TABLE_NAME_COL_WIDTH = 130;
   var TABLE_COL_WIDTH = 110;
@@ -3119,7 +5298,11 @@
       return state.cards.filter(function (c) { return c.id === id; })[0];
     }).filter(Boolean);
     var width = GROUP_MIN_WIDTH;
-    cards.forEach(function (c) { width = Math.max(width, c.width || 170); });
+    if (group.manualWidth) {
+      width = Math.max(GROUP_MIN_WIDTH - GROUP_PADDING * 2, group.manualWidth - GROUP_PADDING * 2);
+    } else {
+      cards.forEach(function (c) { width = Math.max(width, c.width || 170); });
+    }
 
     var titleText = (group.title && group.title.length) ? group.title : "Untitled stack";
     var titleNeeds = measureGroupTitleWidth(titleText) + GROUP_HEADER_CHROME;
@@ -3128,6 +5311,7 @@
     var frameWidth = width + GROUP_PADDING * 2;
     var y = group.y + GROUP_HEADER_HEIGHT + GROUP_PADDING;
     var rows = cards.map(function (c) {
+      // Always stretch card to fill available width
       var row = { card: c, x: group.x + GROUP_PADDING, y: y, width: width };
       y += (c.height || 90) + GROUP_GAP;
       return row;
@@ -3147,6 +5331,15 @@
     frame.style.width = layout.frameWidth + "px";
     frame.style.height = (group.collapsed ? GROUP_HEADER_HEIGHT : (isTable ? GROUP_HEADER_HEIGHT : layout.frameHeight)) + "px";
     frame.dataset.id = group.id;
+
+    // Drag bar — sits above the header, always grabbable
+    var dragBar = document.createElement("div");
+    dragBar.className = "card-group-drag-bar";
+    var dots = document.createElement("div");
+    dots.className = "card-group-drag-bar-dots";
+    for (var d = 0; d < 6; d++) dots.appendChild(document.createElement("span"));
+    dragBar.appendChild(dots);
+    frame.appendChild(dragBar);
 
     var header = document.createElement("div");
     header.className = "card-group-header";
@@ -3276,18 +5469,73 @@
     });
     header.appendChild(unstackBtn);
 
-    frame.appendChild(header);
-    itemsLayer.appendChild(frame);
+    // Connect handle on stack frame
+    var groupConnectHandle = document.createElement("div");
+    groupConnectHandle.className = "connect-handle";
+    groupConnectHandle.style.zIndex = "2";
+    frame.appendChild(groupConnectHandle);
+    groupConnectHandle.addEventListener("pointerdown", function (e) {
+      startConnection(e, group.id, groupConnectHandle);
+    });
+    groupConnectHandle.addEventListener("click", function (e) { e.stopPropagation(); });
 
-    header.addEventListener("pointerdown", function (e) {
-      if (e.target === titleInput || (e.target.closest && (e.target.closest(".unstack-btn") || e.target.closest(".group-collapse-btn") || e.target.closest(".group-view-toggle")))) return;
+    // X-axis resize handle
+    var groupResizeHandle = document.createElement("div");
+    groupResizeHandle.className = "group-resize-handle";
+    groupResizeHandle.innerHTML = '<svg viewBox="0 0 8 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="2" y1="2" x2="2" y2="14"/><line x1="6" y1="2" x2="6" y2="14"/></svg>';
+    frame.appendChild(groupResizeHandle);
+    groupResizeHandle.addEventListener("pointerdown", function (e) {
+      e.stopPropagation();
+      groupResizeHandle.setPointerCapture(e.pointerId);
+      var startX = e.clientX;
+      var startWidth = layout.frameWidth;
+      frame.style.transition = "none";
+      function move(ev) {
+        var dx = (ev.clientX - startX) / scale;
+        var newWidth = Math.max(GROUP_MIN_WIDTH, startWidth + dx);
+        group.manualWidth = newWidth;
+        frame.style.width = newWidth + "px";
+        // Live-update card widths inside
+        var newLayout = computeGroupLayout(group);
+        newLayout.rows.forEach(function (row) {
+          var cardEl = itemsLayer.querySelector('.card[data-id="' + row.card.id + '"]');
+          if (cardEl) {
+            cardEl.style.transition = "none";
+            cardEl.style.width = row.width + "px";
+          }
+        });
+      }
+      function up(ev) {
+        groupResizeHandle.removeEventListener("pointermove", move);
+        groupResizeHandle.removeEventListener("pointerup", up);
+        groupResizeHandle.releasePointerCapture(ev.pointerId);
+        // Apply final width to cards in state and re-render
+        var finalLayout = computeGroupLayout(group);
+        finalLayout.rows.forEach(function (row) {
+          row.card.width = row.width;
+        });
+        saveState();
+        refreshCanvas();
+      }
+      groupResizeHandle.addEventListener("pointermove", move);
+      groupResizeHandle.addEventListener("pointerup", up);
+    });
+    groupResizeHandle.addEventListener("click", function (e) { e.stopPropagation(); });
+
+    frame.addEventListener("contextmenu", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      openStackMenu(group, "group", e.clientX, e.clientY);
+    });
+
+    function startGroupDrag(e, captureEl) {
       e.stopPropagation();
       if (!selectedGroupIds.has(group.id)) {
         clearSelection();
         selectedGroupIds.add(group.id);
         frame.classList.add("selected");
       }
-      header.setPointerCapture(e.pointerId);
+      captureEl.setPointerCapture(e.pointerId);
       frame.style.transition = "none";
       var startX = e.clientX, startY = e.clientY;
       var startGX = group.x, startGY = group.y;
@@ -3322,15 +5570,28 @@
       }
 
       function up(ev) {
-        header.removeEventListener("pointermove", move);
-        header.removeEventListener("pointerup", up);
-        header.releasePointerCapture(ev.pointerId);
+        captureEl.removeEventListener("pointermove", move);
+        captureEl.removeEventListener("pointerup", up);
+        captureEl.releasePointerCapture(ev.pointerId);
         saveState();
         clearAllTransitionOverrides();
       }
 
-      header.addEventListener("pointermove", move);
-      header.addEventListener("pointerup", up);
+      captureEl.addEventListener("pointermove", move);
+      captureEl.addEventListener("pointerup", up);
+    }
+
+    // Drag bar — always draggable
+    dragBar.addEventListener("pointerdown", function (e) {
+      startGroupDrag(e, dragBar);
+    });
+
+    frame.appendChild(header);
+    itemsLayer.appendChild(frame);
+
+    header.addEventListener("pointerdown", function (e) {
+      if (e.target === titleInput || (e.target.closest && (e.target.closest(".unstack-btn") || e.target.closest(".group-collapse-btn") || e.target.closest(".group-view-toggle") || e.target.closest(".connect-handle")))) return;
+      startGroupDrag(e, header);
     });
 
     if (!group.collapsed) {
@@ -3652,19 +5913,258 @@
     playFlipAnimation(beforeUnstack);
   }
 
+  // ---- YouTube helpers ----
+  function parseYouTubeId(url) {
+    url = url.trim();
+    var patterns = [
+      /(?:youtube\.com\/watch\?.*v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([A-Za-z0-9_-]{11})/,
+      /^([A-Za-z0-9_-]{11})$/  // bare ID
+    ];
+    for (var i = 0; i < patterns.length; i++) {
+      var m = url.match(patterns[i]);
+      if (m) return m[1];
+    }
+    return null;
+  }
+
+  function youtubeEmbedUrl(videoId) {
+    return "https://www.youtube.com/embed/" + videoId + "?rel=0&modestbranding=1&enablejsapi=1";
+  }
+
+  function fetchYouTubeTitle(videoId, cb) {
+    var url = "https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=" + videoId + "&format=json";
+    fetch(url).then(function (r) { return r.json(); }).then(function (d) { cb(d.title || ""); }).catch(function () { cb(""); });
+  }
+
+  // ---- Board video item ----
+  var selectedVideoIds = new Set();
+
+  function renderVideo(video) {
+    var el = document.createElement("div");
+    el.className = "video-item" + (selectedVideoIds.has(video.id) ? " selected" : "");
+    el.style.left = video.x + "px";
+    el.style.top = video.y + "px";
+    el.style.width = video.width + "px";
+    el.style.height = video.height + "px";
+    el.dataset.id = video.id;
+
+    // Toolbar
+    var toolbar = document.createElement("div");
+    toolbar.className = "video-item-toolbar";
+
+    var ytIcon = document.createElement("span");
+    ytIcon.style.cssText = "flex-shrink:0;display:flex;align-items:center;";
+    ytIcon.innerHTML = '<svg width="16" height="11" viewBox="0 0 16 11" fill="none"><rect width="16" height="11" rx="2.5" fill="#FF0000"/><polygon points="6.5,2.5 11.5,5.5 6.5,8.5" fill="white"/></svg>';
+    toolbar.appendChild(ytIcon);
+
+    var titleEl = document.createElement("div");
+    titleEl.className = "video-item-title";
+    titleEl.textContent = video.title || "YouTube";
+    toolbar.appendChild(titleEl);
+
+    // Open in YouTube
+    var openBtn = document.createElement("button");
+    openBtn.className = "video-item-btn";
+    openBtn.title = "Open in YouTube";
+    openBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15,3 21,3 21,9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>';
+    openBtn.addEventListener("pointerdown", function (e) { e.stopPropagation(); });
+    openBtn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      window.open("https://www.youtube.com/watch?v=" + video.videoId, "_blank", "noopener");
+    });
+    toolbar.appendChild(openBtn);
+
+    // Delete
+    var delBtn = document.createElement("button");
+    delBtn.className = "video-item-btn danger";
+    delBtn.title = "Remove video";
+    delBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>';
+    delBtn.addEventListener("pointerdown", function (e) { e.stopPropagation(); });
+    delBtn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      state.videos = state.videos.filter(function (v) { return v.id !== video.id; });
+      state.connections = state.connections.filter(function (c) { return c.from !== video.id && c.to !== video.id; });
+      saveState(); refreshCanvas();
+    });
+    toolbar.appendChild(delBtn);
+    el.appendChild(toolbar);
+
+    // Embed area — thumbnail + play button, click opens YouTube
+    var embedDiv = document.createElement("div");
+    embedDiv.className = "video-item-embed";
+
+    var thumb = document.createElement("img");
+    thumb.className = "video-item-thumb";
+    thumb.src = "https://img.youtube.com/vi/" + video.videoId + "/hqdefault.jpg";
+    thumb.alt = video.title || "YouTube video";
+    embedDiv.appendChild(thumb);
+
+    var playOverlay = document.createElement("div");
+    playOverlay.className = "video-item-play-overlay";
+    var playBtn = document.createElement("div");
+    playBtn.className = "video-item-play-btn";
+    playBtn.innerHTML = '<svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>';
+    playOverlay.appendChild(playBtn);
+    embedDiv.appendChild(playOverlay);
+
+    embedDiv.addEventListener("click", function (e) {
+      e.stopPropagation();
+      window.open("https://www.youtube.com/watch?v=" + video.videoId, "_blank", "noopener");
+    });
+    el.appendChild(embedDiv);
+
+    // Resize handle
+    var resizeHandle = document.createElement("div");
+    resizeHandle.className = "resize-handle";
+    resizeHandle.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>';
+    el.appendChild(resizeHandle);
+
+    // Connect handle
+    var connectHandle = document.createElement("div");
+    connectHandle.className = "connect-handle";
+    el.appendChild(connectHandle);
+    connectHandle.addEventListener("pointerdown", function (e) { startConnection(e, video.id, connectHandle); });
+    connectHandle.addEventListener("click", function (e) { e.stopPropagation(); });
+
+    itemsLayer.appendChild(el);
+
+    el.addEventListener("pointerdown", function () {
+      if (!selectedVideoIds.has(video.id)) {
+        clearSelection();
+        selectedVideoIds.add(video.id);
+        el.classList.add("selected");
+      }
+    });
+
+    makeDraggable(el, function (x, y) {
+      var dx = x - video.x; var dy = y - video.y;
+      video.x = x; video.y = y;
+      moveOtherSelectedItems(dx, dy, "video", video.id);
+      renderConnections();
+    });
+
+    // Resize
+    resizeHandle.addEventListener("pointerdown", function (e) {
+      e.stopPropagation();
+      resizeHandle.setPointerCapture(e.pointerId);
+      el.style.transition = "none";
+      var startW = video.width, startH = video.height, startX = e.clientX, startY = e.clientY;
+      var ratio = startW / startH;
+      function move(ev) {
+        var dx = (ev.clientX - startX) / scale;
+        var newW = Math.max(240, startW + dx);
+        video.width = newW; video.height = newW / ratio;
+        el.style.width = newW + "px"; el.style.height = (newW / ratio) + "px";
+      }
+      function up(ev) {
+        resizeHandle.removeEventListener("pointermove", move);
+        resizeHandle.removeEventListener("pointerup", up);
+        resizeHandle.releasePointerCapture(ev.pointerId);
+        saveState(); clearAllTransitionOverrides();
+      }
+      resizeHandle.addEventListener("pointermove", move);
+      resizeHandle.addEventListener("pointerup", up);
+    });
+    resizeHandle.addEventListener("click", function (e) { e.stopPropagation(); });
+
+    return el;
+  }
+
+  function addVideoToBoard(videoId, title, cx, cy) {
+    var w = 480, h = Math.round(w * 9 / 16) + 32; // 32 for toolbar
+    var video = {
+      id: uid(), videoId: videoId, title: title,
+      x: cx - w / 2, y: cy - h / 2,
+      width: w, height: h,
+      muted: false, z: getMaxZ() + 1
+    };
+    state.videos.push(video);
+    saveState(); refreshCanvas();
+  }
+
+  function promptAndAddVideo(cx, cy) {
+    var url = prompt("Paste a YouTube URL:");
+    if (!url) return;
+    var id = parseYouTubeId(url);
+    if (!id) { alert("Couldn't find a YouTube video ID in that URL."); return; }
+    fetchYouTubeTitle(id, function (title) {
+      addVideoToBoard(id, title, cx, cy);
+    });
+  }
+
+  // ---- Video card block renderer ----
+  function renderVideoBlock(block, blockEl) {
+    var inner = blockEl.querySelector(".video-block-inner");
+    inner.innerHTML = "";
+
+    var urlRow = document.createElement("div");
+    urlRow.className = "video-block-url-row";
+    var urlInput = document.createElement("input");
+    urlInput.className = "video-block-url-input";
+    urlInput.placeholder = "Paste YouTube URL…";
+    urlInput.value = block.videoUrl || "";
+    urlInput.addEventListener("pointerdown", function (e) { e.stopPropagation(); });
+    urlRow.appendChild(urlInput);
+
+    var embedBtn = document.createElement("button");
+    embedBtn.className = "video-block-url-btn";
+    embedBtn.textContent = "Embed";
+    embedBtn.addEventListener("click", function () {
+      var id = parseYouTubeId(urlInput.value);
+      if (!id) { urlInput.style.borderColor = "#E07A7A"; return; }
+      urlInput.style.borderColor = "";
+      block.videoUrl = urlInput.value;
+      block.videoId = id;
+      saveBlocksToCard(getActiveCard()); saveState();
+      renderVideoBlock(block, blockEl);
+    });
+    urlRow.appendChild(embedBtn);
+    inner.appendChild(urlRow);
+
+    if (block.videoId) {
+      var embedWrap = document.createElement("div");
+      embedWrap.className = "video-block-embed";
+      var thumb = document.createElement("img");
+      thumb.src = "https://img.youtube.com/vi/" + block.videoId + "/hqdefault.jpg";
+      thumb.alt = "YouTube video";
+      embedWrap.appendChild(thumb);
+      var playOverlay = document.createElement("div");
+      playOverlay.className = "video-item-play-overlay";
+      var playBtn = document.createElement("div");
+      playBtn.className = "video-item-play-btn";
+      playBtn.innerHTML = '<svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>';
+      playOverlay.appendChild(playBtn);
+      embedWrap.appendChild(playOverlay);
+      embedWrap.addEventListener("click", function () {
+        window.open("https://www.youtube.com/watch?v=" + block.videoId, "_blank", "noopener");
+      });
+      inner.appendChild(embedWrap);
+    }
+  }
+
+  // ---- Toolbar video button ----
+  document.getElementById("add-video-btn").addEventListener("click", function () {
+    var rect = wrap.getBoundingClientRect();
+    var cx = (rect.width / 2 - panX) / scale;
+    var cy = (rect.height / 2 - panY) / scale;
+    promptAndAddVideo(cx, cy);
+  });
+
+  // ---- Card block video button ----
+  document.getElementById("btn-add-video").addEventListener("click", function () { addBlock("video"); });
+
   function refreshCanvas() {
     itemsLayer.innerHTML = "";
     state.containers.forEach(function (c) {
       try { renderContainer(c); } catch (err) { console.error("Failed to render container", c.id, err); }
     });
-    state.cardGroups.forEach(function (g) {
-      try { renderCardGroup(g); } catch (err) { console.error("Failed to render stack", g.id, err); }
-    });
     getAllItemsByZ().forEach(function (entry) {
       try {
         if (entry.type === "card") renderCard(entry.ref);
         else if (entry.type === "image") renderImage(entry.ref);
-        else renderShape(entry.ref);
+        else if (entry.type === "shape") renderShape(entry.ref);
+        else if (entry.type === "video") renderVideo(entry.ref);
+        else if (entry.type === "group") renderCardGroup(entry.ref);
       } catch (err) { console.error("Failed to render item", entry.ref && entry.ref.id, err); }
     });
     renderConnections();
@@ -3823,6 +6323,91 @@
   })();
 
   // ---- Init ----
+  // ---- Drag images from browser onto canvas ----
+  wrap.addEventListener("dragover", function (e) {
+    // Accept image files and image URLs dragged from other browser tabs
+    var dt = e.dataTransfer;
+    var hasImage = false;
+    if (dt.types) {
+      for (var i = 0; i < dt.types.length; i++) {
+        var t = dt.types[i];
+        if (t === "Files" || t === "text/uri-list" || t === "text/html") { hasImage = true; break; }
+      }
+    }
+    if (!hasImage) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "copy";
+  });
+
+  wrap.addEventListener("drop", function (e) {
+    e.preventDefault();
+    var rect = wrap.getBoundingClientRect();
+    var dropX = (e.clientX - rect.left - panX) / scale;
+    var dropY = (e.clientY - rect.top - panY) / scale;
+
+    function addImageFromSrc(src, w, h) {
+      var aspect = (w && h) ? w / h : 4 / 3;
+      var imgW = 260;
+      var imgH = Math.round(imgW / aspect);
+      var img = {
+        id: uid(), src: src,
+        x: dropX - imgW / 2, y: dropY - imgH / 2,
+        width: imgW, height: imgH, rotation: 0, z: getMaxZ() + 1
+      };
+      state.images.push(img);
+      saveState();
+      refreshCanvas();
+    }
+
+    // 1. File drop (from desktop or browser download bar)
+    var files = e.dataTransfer.files;
+    if (files && files.length) {
+      Array.from(files).forEach(function (file) {
+        if (!file.type.startsWith("image/")) return;
+        var reader = new FileReader();
+        reader.onload = function (ev) {
+          var tempImg = new Image();
+          tempImg.onload = function () { addImageFromSrc(ev.target.result, tempImg.width, tempImg.height); };
+          tempImg.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+      return;
+    }
+
+    // 2. Image dragged from another browser tab — try URI list first
+    var uriList = e.dataTransfer.getData("text/uri-list");
+    if (uriList) {
+      var urls = uriList.split("\n").map(function (u) { return u.trim(); }).filter(function (u) { return u && !u.startsWith("#"); });
+      urls.forEach(function (url) {
+        if (!/\.(png|jpg|jpeg|gif|webp|svg|avif)(\?.*)?$/i.test(url) && !url.startsWith("data:image")) return;
+        var tempImg = new Image();
+        tempImg.crossOrigin = "anonymous";
+        tempImg.onload = function () { addImageFromSrc(url, tempImg.width, tempImg.height); };
+        tempImg.onerror = function () { addImageFromSrc(url, 0, 0); }; // add anyway, unknown size
+        tempImg.src = url;
+      });
+      if (urls.length) return;
+    }
+
+    // 3. HTML drop — extract img src from dragged HTML fragment
+    var html = e.dataTransfer.getData("text/html");
+    if (html) {
+      var div = document.createElement("div");
+      div.innerHTML = html;
+      var imgs = div.querySelectorAll("img");
+      imgs.forEach(function (imgEl) {
+        var src = imgEl.src || imgEl.getAttribute("src");
+        if (!src) return;
+        var tempImg = new Image();
+        tempImg.crossOrigin = "anonymous";
+        tempImg.onload = function () { addImageFromSrc(src, tempImg.naturalWidth || 260, tempImg.naturalHeight || 195); };
+        tempImg.onerror = function () { addImageFromSrc(src, 0, 0); };
+        tempImg.src = src;
+      });
+    }
+  });
+
   loadState();
   applyCanvasColor(state.canvasColor);
   applyBoardSize();
