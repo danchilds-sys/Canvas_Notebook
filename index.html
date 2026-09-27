@@ -950,7 +950,7 @@
     overflow: hidden;
   }
   #modal-month-stripe {
-    position: absolute; top: 0; left: 0; right: 0; height: 15px;
+    position: absolute; top: 0; left: 0; bottom: 0; width: 15px;
     transition: background 0.2s ease;
   }
   #modal-body {
@@ -1165,7 +1165,10 @@
   .card.cat-event .card-header { background: transparent; border-bottom: 1px solid var(--evt-divider); }
   .card.cat-event .card-title { color: var(--evt-ink); }
   .card.cat-event .card-sub { color: var(--evt-sub); }
-  .event-month-tab { height: 6px; border-radius: 6px 6px 0 0; margin: -1px -1px 0 -1px; }
+  /* Project-colour tab down the left edge, like Radar's own event cards, instead of a month colour on top */
+  .event-project-tab { position: absolute; left: 0; top: 0; bottom: 0; width: 10px; border-radius: 9px 0 0 0; z-index: 1; }
+  .card.cat-event .card-header { padding-left: 22px; position: relative; }
+  .card.cat-event .card-body { padding-left: 22px; }
   .event-date-line { font-family: "Public Sans", "Inter", sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.04em; margin-bottom: 4px; display: flex; align-items: center; gap: 5px; }
   .event-date-chip { display: inline-flex; align-items: center; padding: 1px 6px; border-radius: 999px; font-size: 12px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
   .event-duration-chip { font-size: 12px; color: var(--ink-faint); font-weight: 500; }
@@ -1195,6 +1198,76 @@
   .event-date-field-label { font-family: "Public Sans", "Inter", sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-faint); }
   .event-date-input { border: none; background: transparent; outline: none; font-family: "Public Sans", "Inter", sans-serif; font-size: 12px; font-weight: 500; color: var(--ink-neutral); cursor: pointer; padding: 0; width: 100%; }
   .event-date-sep { color: var(--ink-faint); font-size: 18px; font-weight: 200; align-self: flex-end; padding-bottom: 1px; }
+
+  /* ---- Project picker (Radar-style index tabs) in the event editor ---- */
+  .event-project-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 8px 0 10px; border-top: 1px solid rgba(61,51,42,0.08); margin-top: 2px; }
+  .event-project-label { width: 100%; font-family: "Public Sans", "Inter", sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-faint); }
+  .event-project-btn {
+    display: inline-flex; align-items: center;
+    padding: 3px 10px 3px 8px; border: 1px solid var(--proj-edge, #9A9590); border-left-width: 7px; border-radius: 2px;
+    background: rgba(251,248,240,0.7); font-family: "Public Sans", "Inter", sans-serif; font-size: 13px; font-weight: 700;
+    color: var(--ink-neutral); cursor: pointer; transition: background 0.12s ease;
+  }
+  .event-project-btn:hover { background: rgba(61,51,42,0.06); }
+  .event-project-btn.selected { background: var(--proj-edge, #9A9590); background: color-mix(in srgb, var(--proj-edge, #9A9590) 30%, #FBF8F0); }
+
+  /* ---- Firm / Energy / Thread pickers in the event editor (same row pattern as Project) ---- */
+  .event-firm-row, .event-energy-row, .event-thread-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 8px 0 10px; border-top: 1px solid rgba(61,51,42,0.08); margin-top: 2px; }
+  .event-firm-label, .event-energy-label, .event-thread-label { width: 100%; font-family: "Public Sans", "Inter", sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-faint); }
+  .event-firm-btn, .event-energy-btn {
+    display: inline-flex; align-items: center;
+    padding: 3px 10px; border: 1.5px solid rgba(61,51,42,0.28); border-radius: 999px;
+    background: rgba(251,248,240,0.7); font-family: "Public Sans", "Inter", sans-serif; font-size: 13px; font-weight: 700;
+    color: var(--ink-neutral); cursor: pointer; transition: background 0.12s ease, border-color 0.12s ease;
+  }
+  .event-firm-btn:hover, .event-energy-btn:hover { background: rgba(61,51,42,0.06); }
+  .event-firm-btn.selected, .event-energy-btn.selected { border-color: var(--r-ink, #1E1B18); background: rgba(61,51,42,0.12); color: var(--r-ink, #1E1B18); }
+  .event-mins-input {
+    width: 68px; padding: 4px 8px; border: 1.5px solid rgba(61,51,42,0.18); border-radius: 999px;
+    font-family: "Public Sans", "Inter", sans-serif; font-size: 13px; font-weight: 700; color: var(--ink-neutral);
+    background: rgba(251,248,240,0.7); text-align: center;
+  }
+  .event-thread-input {
+    flex: 1; min-width: 140px; padding: 5px 10px; border: 1.5px solid rgba(61,51,42,0.18); border-radius: 999px;
+    font-family: "Public Sans", "Inter", sans-serif; font-size: 13px; font-weight: 600; color: var(--ink-neutral);
+    background: rgba(251,248,240,0.7);
+  }
+
+  /* ---- Radar-parity meta chips shown on the event card face itself ---- */
+  .event-chip-row { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin-top: 4px; }
+  .event-meta-chip {
+    display: inline-flex; align-items: center; padding: 1px 7px; border-radius: 999px;
+    font-family: "Public Sans", "Inter", sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+    background: rgba(61,51,42,0.1); color: var(--ink-neutral); white-space: nowrap;
+  }
+  .event-outline-chip {
+    display: inline-flex; align-items: center; padding: 1px 7px; border-radius: 999px;
+    font-family: "Public Sans", "Inter", sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+    border: 1.5px solid var(--r-ink, #1E1B18); color: var(--r-ink, #1E1B18); background: transparent; white-space: nowrap;
+  }
+  .event-overdue-chip { border-color: #B01A19; color: #B01A19; }
+  /* Coloured project tag on the card face — same printed-index-tab look as Radar's own project chips */
+  .event-project-chip {
+    display: inline-flex; align-items: center; padding: 1px 8px 1px 7px; border: 1px solid var(--proj-edge, #9A9590); border-left-width: 6px; border-radius: 2px;
+    font-family: "Public Sans", "Inter", sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+    background: rgba(251,248,240,0.7); color: var(--ink-neutral); white-space: nowrap;
+  }
+  /* Done tick box, Radar-style, to the left of the title */
+  .event-check {
+    width: 18px; height: 18px; flex-shrink: 0; margin-right: 8px; box-sizing: border-box;
+    border: 1.5px solid var(--r-ink, #1E1B18); border-radius: 5px;
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer; background: rgba(251,248,240,0.85);
+  }
+  .event-check:hover { background: rgba(61,51,42,0.1); }
+  .event-check.checked { background: var(--r-ink, #1E1B18); border-color: var(--r-ink, #1E1B18); }
+  .event-check.checked::after {
+    content: ""; width: 8px; height: 4px; margin-bottom: 2px;
+    border-left: 2px solid #FBF8F0; border-bottom: 2px solid #FBF8F0;
+    transform: rotate(-45deg);
+  }
+  .card.cat-event.event-done { opacity: 0.7; }
+  .card.cat-event.event-done .card-title { text-decoration: line-through; }
 
   /* ---- Timeline view ---- */
   .card-group-timeline {
@@ -1338,6 +1411,7 @@
   }
   .block-image-add:hover { border-color: var(--ink-neutral); color: var(--ink-neutral); }
   .block-image-add svg { width: 18px; height: 18px; }
+  .block-image-gallery.drag-over { outline: 2px dashed #D9822B; outline-offset: 4px; border-radius: 8px; background: rgba(217,130,43,0.08); }
 
   /* Song block */
   .block-song { padding: 4px 0; }
@@ -2134,7 +2208,7 @@
   .card.cat-documentary { --edge: #3B76D5; } .card.cat-fiction { --edge: #802A40; } .card.cat-music { --edge: #E39A12; } .card.cat-games { --edge: #EA5F14; } .card.cat-event { --edge: #A9A7A3; }
   .card.cat-music .card-header { background: linear-gradient(160deg, #FFF1D6 0%, #FFCB70 100%); border-bottom-color: #E39A12; }
   .card.cat-games .card-header { background: linear-gradient(160deg, #FFE3D2 0%, #FF9B5E 100%); border-bottom-color: #EA5F14; }
-  .card.cat-event .card-header { background: #E4E3E1; border-bottom-color: #A9A7A3; }
+  .card.cat-event .card-header { background: #FFFFFF; border-bottom-color: #A9A7A3; }
   .card-header { border-bottom-width: 1.5px; box-shadow: inset 0 4px 0 var(--edge); padding-top: 13px; }
   .card .card-title { font-family: "Public Sans", "Inter", sans-serif; font-weight: 700; font-size: 16px; letter-spacing: -0.01em; }
   .card-preview-heading, .card-song-pill-title { font-family: var(--dl-bold); font-weight: 700; }
@@ -2146,9 +2220,8 @@
   .card-block-icon svg { width: 14px; height: 14px; }
   .timeline-event-card { background: #F1F0EE; border-color: #C9C7C3; box-shadow: 1px 3px 8px rgba(61,51,42,0.16), 0 1px 2px rgba(61,51,42,0.12); }
   .timeline-event-card-title { font-family: "Public Sans", "Inter", sans-serif; font-weight: 700; }
-  /* Event cards: the month-colour tab IS the top bar. Fit it inside the card edge and drop the extra inset bar. */
-  .card.cat-event .event-month-tab { height: 5px; margin: 0; border-radius: 9px 9px 0 0; }
-  .card.cat-event .card-header { box-shadow: none; border-radius: 0; padding-top: 10px; }
+  /* Event cards: the project-colour tab runs down the left edge. Drop the extra inset bar. */
+  .card.cat-event .card-header { box-shadow: none; border-radius: 0; }
   .table-cell.table-name-cell { font-family: "Public Sans", "Inter", sans-serif; font-weight: 700; letter-spacing: -0.005em; }
   /* ===== end DL TRIAL ===== */
   /* ===== DL RESPONSIVE: floating title bar and toolbar fit the screen (no visual restyle, just wrapping) ===== */
@@ -2238,7 +2311,7 @@
   .card.cat-fiction .card-header { background: #F7A3D3; border-bottom-color: #E0527A; }
   .card.cat-music .card-header { background: #FFD865; border-bottom-color: #E8B92E; }
   .card.cat-games .card-header { background: #FF9B5E; border-bottom-color: #E0883A; }
-  .card.cat-event .card-header { background: #E4E3E1; border-bottom-color: #A9A7A3; }
+  .card.cat-event .card-header { background: #FFFFFF; border-bottom-color: #A9A7A3; }
   .card.cat-idea .card-header { background: #DDD6C6; border-bottom-color: #9A9590; }
   .card.cat-fiction .card-title { color: #7A1F3C; } .card.cat-fiction .card-sub { color: #7A1F3C; }
   /* display-caps titles, like PROJECT RADAR */
@@ -2247,8 +2320,8 @@
   .card .card-sub { display: inline-block; align-self: flex-start; width: fit-content; max-width: 100%; margin-top: 3px; padding: 1px 8px 1px 8px; border: 1px solid var(--edge); border-left-width: 7px; border-radius: 2px; background: rgba(251,248,240,0.7); }
   .card.selected, .img-item.selected, .shape-item.selected, .card-group-frame.selected, .container-box.selected { outline: 2.5px solid var(--r-ink); outline-offset: 3px; }
   /* ===== end cards ===== */
-  /* v18: month-colour tab stays clearly visible on cards inside stacks (notebook + timeline) */
-  .card.cat-event .event-month-tab { height: 9px; border-bottom: 1.5px solid var(--r-ink); box-sizing: border-box; flex-shrink: 0; }
+  /* v18: project-colour tab stays clearly visible on cards inside stacks (notebook); timeline keeps its month colour */
+  .card.cat-event .event-project-tab { width: 10px; }
   .timeline-event-card-tab { height: 9px; border-bottom: 1.5px solid var(--r-ink); box-sizing: border-box; }
   /* v19: title bar icons in the bold flat-colour style (ink outline, colour blocks) */
   /* v20: title bar sized to match the bottom tool bar (62px tall, 46px buttons, 26px icons) */
@@ -2296,6 +2369,7 @@
   /* ===== end DL RADAR STYLE ===== */
 </style>
 <style id="ye-css">/* DL YEAR EGG */
+/* v30 (ported from Radar/trial, 27 Sep): back to pill-shaped toggles with an ink ring, so they read as the egg's own round markers rather than the coloured project index tabs */
 .yeroot{--month-jan:#D4D2D5;--month-feb:#AAB7C3;--month-mar:#D46E6A;--month-apr:#82B372;--month-may:#BC6E7E;--month-jun:#DD9866;--month-jul:#EBBB5F;--month-aug:#DD805F;--month-sep:#B5745F;--month-oct:#A6A5A6;--month-nov:#846C59;--month-dec:#6B696C;--panel:#FBF8F0;--panel-2:#F5F0E3;--bg:#F5F0E3;--ink:#3D332A;--ink-soft:#6B5E4E;--font-display:var(--dl-bold),"Encode Sans Semi Condensed","Arial Narrow",sans-serif;--font-mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;--font-body:"Public Sans","Inter",system-ui,sans-serif;--shadow-card:0 2px 8px rgba(61,51,42,.18);display:flex;flex-direction:column;color:var(--ink);font-family:var(--font-body);box-sizing:border-box;touch-action:none}
 #ye-overlay{position:fixed;inset:0;z-index:25;background:linear-gradient(170deg,var(--panel) 0%,var(--panel-2) 100%);padding:12px 16px calc(10px + env(safe-area-inset-bottom,0px));padding-top:max(12px,env(safe-area-inset-top,0px))}
 .yeroot *{box-sizing:border-box}
@@ -2311,10 +2385,10 @@
 .yeroot .zl{font:700 14px var(--font-mono);color:var(--ink-soft);min-width:9ch}
 .yeroot .zoomctl{display:inline-flex;align-items:center;gap:6px}
 .yeroot .eggchips{display:flex;flex-wrap:wrap;gap:8px;width:100%}
-.yeroot .eggchip{display:inline-flex;align-items:center;min-height:38px;padding:4px 14px 4px 22px;border:0;border-radius:3px;position:relative;background:color-mix(in srgb,var(--c) 18%,var(--panel));color:var(--ink);font:800 15px var(--font-display);letter-spacing:.04em;text-transform:uppercase;cursor:pointer;white-space:nowrap}
-.yeroot .eggchip::before{content:"";position:absolute;left:0;top:0;bottom:0;width:10px;border-radius:3px 0 0 3px;background:var(--c)}
-.yeroot .eggchip[aria-pressed="false"]{background:var(--panel);color:var(--ink-soft);text-decoration:line-through}
-.yeroot .eggchip[aria-pressed="false"]::before{opacity:.35}
+.yeroot .eggchip{display:inline-flex;align-items:center;gap:7px;min-height:38px;padding:6px 14px 6px 8px;border-radius:999px;border:2px solid var(--ink);background:var(--c-bg,var(--panel));color:var(--ink);font:800 14px var(--font-display);letter-spacing:.05em;text-transform:uppercase;cursor:pointer;white-space:nowrap}
+.yeroot .eggchip i{display:inline-block;width:12px;height:12px;border-radius:50%;background:var(--c);border:2px solid var(--ink)}
+.yeroot .eggchip[aria-pressed="false"]{background:transparent;border-style:dashed;border-color:var(--line,var(--ink-soft));color:var(--ink-soft);opacity:.8}
+.yeroot .eggchip[aria-pressed="false"] i{background:transparent;border-color:var(--ink-soft)}
 .yeroot .eggkey{font-size:14px;color:var(--ink-soft);margin:6px 4px 0}
 @media (max-width:600px){.yeroot .eggkey{display:none}}
 .yeroot svg.egg{width:100%;max-width:640px;height:auto;display:block;margin:0 auto;touch-action:manipulation}
@@ -2327,6 +2401,9 @@
 .yeroot svg.egg .es{font-family:var(--font-mono);font-weight:600;font-size:13px;fill:var(--ink-soft);letter-spacing:.08em;text-transform:uppercase}
 .yeroot svg.egg .tdline{stroke:var(--ink);stroke-width:2.5;stroke-linecap:round;stroke-dasharray:1 6}
 .yeroot svg.egg .tddot{fill:var(--ink)}
+.yeroot svg.egg .tdhit{cursor:pointer;outline:none}
+.yeroot svg.egg .tdhit:hover .tddot,.yeroot svg.egg .tdhit:focus-visible .tddot{r:5}
+.yeroot svg.egg .tdhit:hover .tdl,.yeroot svg.egg .tdhit:focus-visible .tdl{text-decoration:underline}
 .yeroot svg.egg .tdl{font-family:var(--font-mono);font-weight:700;font-size:13px;letter-spacing:.08em;fill:var(--ink)}
 .yeroot svg.egg .mk{cursor:pointer;outline:none}
 .yeroot svg.egg .mk circle{stroke:var(--ink);stroke-width:2;fill:var(--c)}
@@ -2375,6 +2452,7 @@
 .yeroot svg.egg .tldn.wk{fill:var(--ink);font-weight:700}
 .yeroot svg.egg .tldn.td, .yeroot svg.egg .tldw.td{fill:var(--ink);font-weight:800}
 .yeroot svg.egg .tlst{stroke:var(--c);stroke-width:2}
+.yeroot svg.egg .tlst.multi{stroke:var(--ink-soft)}
 .yeroot svg.egg .tlrg{fill:var(--c);stroke:var(--ink);stroke-width:1.5;cursor:pointer}
 .yeroot svg.egg .tlc{cursor:pointer;outline:none}
 .yeroot svg.egg .tlcb{fill:var(--panel)}
@@ -2406,6 +2484,16 @@
 .egg-year-item .yeroot .cardchips{margin-bottom:8px}
 .egg-year-item .yeroot svg.egg{touch-action:none}
 .egg-year-item .yeroot svg.egg.tl{touch-action:pan-y}
+/* v30: hour ticks and labels, once zoomed in past about a day on screen */
+.yeroot svg.egg .htick{stroke:var(--ink-soft);stroke-width:1;opacity:.45}
+.yeroot svg.egg .htick.noon{opacity:.8}
+.yeroot svg.egg .htl{font-family:var(--font-mono);font-weight:600;font-size:12px;fill:var(--ink-soft)}
+.yeroot svg.egg .htl.noon{fill:var(--ink);font-weight:700}
+/* v30: hovering a card, marker or stem highlights all of them together, so it's clear which belongs to which */
+.yeroot svg.egg .mk.hl circle{stroke-width:4}
+.yeroot svg.egg .tlst.hl{stroke-width:4}
+.yeroot svg.egg .tlc.hl .tlcb{stroke:var(--ink);stroke-width:2.5}
+.yeroot svg.egg .tlrun.hl .tlrg{stroke-width:3}
 </style>
 
 <style id="dl-blocks-css">
@@ -2450,7 +2538,8 @@
 .card::after{border-radius:10px}
 .card-header{border-radius:9px 9px 0 0}
 .card-body{border-radius:0 0 9px 9px}
-.card.cat-event .card-header{border-radius:0}
+.card.cat-event .card-header{border-radius:9px 9px 0 0}
+.card::after{z-index:2}
 /* v40: card titles and category tabs in Radar ink on the coloured headers (was per-category ink, 3.1-5.6:1) */
 .card.cat-documentary .card-title,.card.cat-fiction .card-title,.card.cat-music .card-title,.card.cat-games .card-title{color:var(--r-ink,#1E1B18)}
 .card.cat-documentary .card-sub,.card.cat-fiction .card-sub,.card.cat-music .card-sub,.card.cat-games .card-sub{color:var(--r-ink,#1E1B18)}
@@ -3586,12 +3675,96 @@
     return TAG_PALETTE[usedCount % TAG_PALETTE.length];
   }
 
+  // Event cards are tagged with a Radar project instead of a month, and coloured
+  // to match Radar's own project colours (see FEED_COL below, same hexes).
+  var EVENT_PROJECTS = ["kcl", "longhouse", "home", "personal", "health", "misc", "games"];
+  var EVENT_PROJECT_COLORS = {
+    kcl: "#E12726",
+    longhouse: "#3B82C4",
+    home: "#4FAF54",
+    personal: "#E8B92E",
+    health: "#3A9E92",
+    misc: "#E0527A",
+    games: "#E0883A"
+  };
+  var EVENT_PROJECT_LABELS = {
+    kcl: "KCL",
+    longhouse: "Longhouse",
+    home: "Home",
+    personal: "Personal",
+    health: "Health",
+    misc: "Misc",
+    games: "Games"
+  };
+  var EVENT_PROJECT_NONE_COLOR = "#9A9590";
+  function eventProjectColour(project) {
+    return EVENT_PROJECT_COLORS[project] || EVENT_PROJECT_NONE_COLOR;
+  }
+
+  // Firm (how fixed the time is) and Energy (effort + duration), same fields as Radar items
+  var EVENT_FIRM_OPTIONS = ["fixed", "calendar", "suggested", "tentative"];
+  var EVENT_FIRM_LABELS = { fixed: "Fixed", calendar: "Calendar", suggested: "Suggested", tentative: "Tentative" };
+  var EVENT_ENERGY_OPTIONS = ["deep", "shallow", "admin"];
+  var EVENT_ENERGY_LABELS = { deep: "Deep", shallow: "Shallow", admin: "Admin" };
+
+  function todayLocalStr() {
+    var d = new Date();
+    var y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, "0"), day = String(d.getDate()).padStart(2, "0");
+    return y + "-" + m + "-" + day;
+  }
+
+  // Radar-style info row shown on the event card face, all on one line under the title:
+  // date/time, overdue flag, firm, coloured project tag, energy + duration, thread.
+  function buildEventInfoRow(card) {
+    var row = document.createElement("div");
+    row.className = "event-chip-row";
+
+    // Date/time — same "index tab" pill used for every category's sub-label
+    var dateChip = document.createElement("span");
+    dateChip.className = "card-sub";
+    dateChip.textContent = getEventSubText(card);
+    row.appendChild(dateChip);
+
+    var chips = [];
+    var sd = getCardStartDate(card);
+    if (sd) {
+      var diffDays = daysBetween(sd, parseDate(todayLocalStr()));
+      if (diffDays > 0) {
+        var label = diffDays === 1 ? "! 1 day ago" : "! " + diffDays + " days ago";
+        chips.push({ text: label, cls: "event-outline-chip event-overdue-chip" });
+      }
+    }
+    if (card.firm && EVENT_FIRM_LABELS[card.firm]) {
+      chips.push({ text: EVENT_FIRM_LABELS[card.firm], cls: "event-outline-chip" });
+    }
+    if (card.project && EVENT_PROJECT_LABELS[card.project]) {
+      chips.push({ text: EVENT_PROJECT_LABELS[card.project], cls: "event-project-chip", edge: EVENT_PROJECT_COLORS[card.project] });
+    }
+    if (card.energy && EVENT_ENERGY_LABELS[card.energy]) {
+      var minsLabel = card.mins ? (" \u00b7 " + card.mins + " min") : "";
+      chips.push({ text: EVENT_ENERGY_LABELS[card.energy] + minsLabel, cls: "event-meta-chip" });
+    } else if (card.mins) {
+      chips.push({ text: card.mins + " min", cls: "event-meta-chip" });
+    }
+    if (card.thread && card.thread.trim()) {
+      chips.push({ text: card.thread.trim(), cls: "event-meta-chip" });
+    }
+    chips.forEach(function (c) {
+      var span = document.createElement("span");
+      span.className = c.cls;
+      if (c.edge) span.style.setProperty("--proj-edge", c.edge);
+      span.textContent = c.text;
+      row.appendChild(span);
+    });
+    return row;
+  }
+
   var CATEGORY_BG = {
     documentary: "#85AED0",
     fiction: "#E891A4",
     music: "#EDCF76",
     idea: "#DDD6C6",
-    event: "#E4E3E1",
+    event: "#FFFFFF",
     games: "#E8B27E"
   };
 
@@ -3627,9 +3800,7 @@
       stripe.style.background = "transparent";
       return;
     }
-    var d = getCardStartDate(card);
-    if (!d) d = new Date();
-    stripe.style.background = monthColour(d.getMonth());
+    stripe.style.background = eventProjectColour(card.project);
   }
 
   var CANVAS_PALETTE = {
@@ -5410,6 +5581,49 @@
   });
 
   // ---- Cards ----
+  // Offscreen host used to measure real card-header content (event chip rows) at its
+  // natural, unwrapped width, so event cards can size themselves to fit without waste.
+  var eventMeasureHost = document.createElement("div");
+  eventMeasureHost.style.cssText = "position:absolute;left:-9999px;top:-9999px;visibility:hidden;white-space:nowrap;";
+  document.body.appendChild(eventMeasureHost);
+
+  function measureNaturalWidth(el, forceNoWrap) {
+    if (!el) return 0;
+    if (forceNoWrap) { el.style.flexWrap = "nowrap"; el.style.width = "max-content"; }
+    eventMeasureHost.appendChild(el);
+    var w = Math.ceil(el.getBoundingClientRect().width);
+    eventMeasureHost.removeChild(el);
+    return w;
+  }
+
+  // Measures a real .card.cat-event header (actual title + info-row elements, full CSS
+  // cascade applied) at a given card width, so minH reflects exactly how tall the header
+  // will render — including when the info row wraps because the card is narrower than the
+  // ideal one-line width (e.g. a card inside a stack, whose width the group layout sets).
+  function measureEventHeaderHeight(card, targetWidth) {
+    var wrapperEl = document.createElement("div");
+    wrapperEl.className = "card cat-event";
+    wrapperEl.style.cssText = "position:absolute;left:-9999px;top:-9999px;visibility:hidden;height:auto;width:" + Math.max(60, targetWidth) + "px;";
+    var headerEl = document.createElement("div");
+    headerEl.className = "card-header";
+    var measureTitleRow = document.createElement("div");
+    measureTitleRow.style.cssText = "display:flex;align-items:center;width:100%;";
+    var measureCheckbox = document.createElement("span");
+    measureCheckbox.className = "event-check";
+    measureTitleRow.appendChild(measureCheckbox);
+    var title = document.createElement("p");
+    title.className = "card-title";
+    title.textContent = card.title || "Untitled";
+    measureTitleRow.appendChild(title);
+    headerEl.appendChild(measureTitleRow);
+    headerEl.appendChild(buildEventInfoRow(card));
+    wrapperEl.appendChild(headerEl);
+    document.body.appendChild(wrapperEl);
+    var h = Math.ceil(headerEl.getBoundingClientRect().height);
+    document.body.removeChild(wrapperEl);
+    return h;
+  }
+
   function estimateMinCardSize(card) {
     var title = card.title || "Untitled";
     var titleTextWidth;
@@ -5424,8 +5638,31 @@
     if (card.images && card.images.length) blockTypes["image"] = true;
     var iconCount = Object.keys(blockTypes).length;
     var iconsWidth = iconCount > 0 ? (iconCount * 15) + 6 : 0;
-    var minW = Math.max(130, Math.ceil(titleTextWidth) + 24 + iconsWidth + 8);
+    var checkboxWidth = card.category === "event" ? 26 : 0; // 18px box + 8px margin
+    var minW = Math.max(130, Math.ceil(titleTextWidth) + 24 + iconsWidth + checkboxWidth + 8);
+
+    // Event cards: widen (or narrow) to fit the single combined info line — date/time,
+    // overdue, firm, project tag, energy + duration, thread — all on one row under the title.
     var minH = 72;
+    if (card.category === "event") {
+      var infoRowEl = buildEventInfoRow(card);
+      var infoRowW = measureNaturalWidth(infoRowEl, true);
+      // Header padding for event cards: 22px left (clears the project tab) + 12px right
+      minW = Math.max(minW, infoRowW + 34);
+
+      // Height: measure the real header at the width the card will actually render at.
+      // A standalone card is clamped to at least minW (so the info row always fits on one
+      // line there) — but a card inside a stack gets its width from the group's own layout
+      // and can end up narrower than minW, wrapping the info row onto more than one line.
+      // Measuring at the real width (when narrower) keeps the card tall enough to show it.
+      var group = getCardGroup(card.id);
+      var measureW = (group && card.width && card.width < minW) ? card.width : minW;
+      var headerH = measureEventHeaderHeight(card, measureW);
+      // Collapsed cards should show only the header — no residual body strip —
+      // so the floor hugs the measured header height with just a hairline of slack.
+      minH = Math.max(72, headerH + 2);
+    }
+
     return { minW: minW, minH: minH };
   }
 
@@ -5572,7 +5809,21 @@
   function renderCard(card, override) {
     var minSize = estimateMinCardSize(card);
     card.width = Math.max(card.width || 260, minSize.minW);
-    card.height = Math.max(card.height || 120, minSize.minH);
+
+    // Event cards with no body content (no blocks/notes/images — the common case: an
+    // event card is really just a header) always hug exactly the height their content
+    // needs. This is what makes them behave like proper rows in a stack instead of
+    // leaving a stale, oversized blank rectangle below the info line — whether that
+    // staleness came from the old generic "120" fallback on first creation, or from
+    // the header shrinking (fewer lines, tighter fields) after later edits. A card
+    // that DOES carry real body content still only ever grows (never auto-shrinks),
+    // same as every other category — resize/Minimise it by hand as before.
+    var hasBodyContent = (card.blocks && card.blocks.length) || (card.notes && card.notes.trim()) || (card.images && card.images.length);
+    if (card.category === "event" && !hasBodyContent) {
+      card.height = minSize.minH;
+    } else {
+      card.height = Math.max(card.height || 120, minSize.minH);
+    }
 
     var locked = !!override;
     var renderX = locked ? override.x : card.x;
@@ -5580,25 +5831,25 @@
     var renderWidth = locked ? override.width : card.width;
 
     var el = document.createElement("div");
-    el.className = "card cat-" + card.category + (selectedCardIds.has(card.id) ? " selected" : "");
+    el.className = "card cat-" + card.category + (selectedCardIds.has(card.id) ? " selected" : "") + ((card.category === "event" && card.done) ? " event-done" : "");
     el.style.left = renderX + "px";
     el.style.top = renderY + "px";
     el.style.width = renderWidth + "px";
     el.style.height = card.height + "px";
     el.dataset.id = card.id;
 
-    // Event cards get a month-colour tab at the very top
-    if (card.category === "event") {
-      var startD = getCardStartDate(card);
-      var tabColour = startD ? monthColour(startD.getMonth()) : "#C8C8D0";
-      var tab = document.createElement("div");
-      tab.className = "event-month-tab";
-      tab.style.background = tabColour;
-      el.appendChild(tab);
-    }
-
     var header = document.createElement("div");
     header.className = "card-header";
+
+    // Event cards get a Radar-project-colour tab down the left edge of the HEADER only
+    // (not the whole card) — it's a child of the header, not the card, so it anchors to
+    // and exactly matches the header's own height.
+    if (card.category === "event") {
+      var tab = document.createElement("div");
+      tab.className = "event-project-tab";
+      tab.style.background = eventProjectColour(card.project);
+      header.appendChild(tab);
+    }
 
     var title = document.createElement("p");
     title.className = "card-title";
@@ -5613,18 +5864,27 @@
 
     var sub = document.createElement("p");
     sub.className = "card-sub";
-    if (card.category === "event" && card.startDate) {
-      var sd = getCardStartDate(card);
-      var ed = getCardEndDate(card);
-      var dateStr = sd ? (formatDateShort(sd) + (ed && ed > sd ? " – " + formatDateShort(ed) : "")) : "event";
-      var timeStr = card.startTime ? (" · " + card.startTime + (card.endTime ? "–" + card.endTime : "")) : "";
-      sub.textContent = dateStr + timeStr;
-    } else {
-      sub.textContent = card.category;
-    }
+    sub.textContent = getEventSubText(card);
 
     var titleRow = document.createElement("div");
     titleRow.style.cssText = "display:flex;align-items:center;width:100%;";
+
+    if (card.category === "event") {
+      var checkbox = document.createElement("span");
+      checkbox.className = "event-check" + (card.done ? " checked" : "");
+      checkbox.setAttribute("role", "checkbox");
+      checkbox.setAttribute("aria-checked", card.done ? "true" : "false");
+      checkbox.title = card.done ? "Mark not done" : "Mark done";
+      checkbox.addEventListener("pointerdown", function (e) { e.stopPropagation(); });
+      checkbox.addEventListener("click", function (e) {
+        e.stopPropagation();
+        card.done = !card.done;
+        saveState();
+        refreshCanvas();
+      });
+      titleRow.appendChild(checkbox);
+    }
+
     titleRow.appendChild(title);
 
     // Block type icons — inline with title, pushed right
@@ -5663,7 +5923,14 @@
     }
 
     header.appendChild(titleRow);
-    header.appendChild(sub);
+
+    // Event cards: date/time + overdue/firm/project/energy/thread all on one combined
+    // line under the title (Radar-parity fields). Other categories: just the sub label.
+    if (card.category === "event") {
+      header.appendChild(buildEventInfoRow(card));
+    } else {
+      header.appendChild(sub);
+    }
 
     var body = document.createElement("div");
     body.className = "card-body";
@@ -5992,6 +6259,13 @@
     if (locked) {
       header.addEventListener("click", function () {
         if (el.dataset.justDragged === "1") return;
+        // When collapsed, the body has no visible/clickable footprint (only the header
+        // shows), so the header itself is the accordion control: click to reveal the
+        // card's content. Once expanded, clicking the header opens the full editor as
+        // before, and clicking the (now visible) body collapses it again.
+        var minSizeH = estimateMinCardSize(card);
+        var atMinH = card.height <= minSizeH.minH + 2;
+        if (atMinH) { maximizeCard(card); return; }
         openCardFromOrigin(card.id, el);
       });
       body.addEventListener("click", function (e) {
@@ -9127,6 +9401,17 @@
   function getCardStartDate(card) { return parseDate(card.startDate); }
   function getCardEndDate(card) { return parseDate(card.endDate) || getCardStartDate(card); }
 
+  function getEventSubText(card) {
+    if (card.category === "event" && card.startDate) {
+      var sd = getCardStartDate(card);
+      var ed = getCardEndDate(card);
+      var dateStr = sd ? (formatDateShort(sd) + (ed && ed > sd ? " \u2013 " + formatDateShort(ed) : "")) : "event";
+      var timeStr = card.startTime ? (" \u00b7 " + card.startTime + (card.endTime ? "\u2013" + card.endTime : "")) : "";
+      return dateStr + timeStr;
+    }
+    return card.category;
+  }
+
   function getActiveCard() {
     return activeCardId ? state.cards.filter(function (c) { return c.id === activeCardId; })[0] : null;
   }
@@ -9348,6 +9633,84 @@
     });
     addBtn.appendChild(inp);
     gallery.appendChild(addBtn);
+
+    // DL: drag images from the web (or the Finder) straight into this block.
+    // renderImageBlockGallery() re-runs on every add/remove against the same
+    // gallery element, so wire these listeners once only.
+    if (gallery._dropWired) return;
+    gallery._dropWired = true;
+
+    gallery.addEventListener("dragover", function (e) {
+      var dt = e.dataTransfer;
+      var hasImage = false;
+      if (dt.types) {
+        for (var i = 0; i < dt.types.length; i++) {
+          var t = dt.types[i];
+          if (t === "Files" || t === "text/uri-list" || t === "text/html") { hasImage = true; break; }
+        }
+      }
+      if (!hasImage) return;
+      e.preventDefault();
+      e.stopPropagation();
+      dt.dropEffect = "copy";
+      gallery.classList.add("drag-over");
+    });
+    gallery.addEventListener("dragleave", function () {
+      gallery.classList.remove("drag-over");
+    });
+    gallery.addEventListener("drop", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      gallery.classList.remove("drag-over");
+
+      function addDroppedImage(src, thumb, tiny) {
+        block.images = block.images || [];
+        block.images.push({ id: uid(), src: src, thumb: thumb || undefined, tiny: tiny || undefined });
+        saveBlocksToCard(card); saveState(); refreshCanvas();
+        renderImageBlockGallery(gallery, block, card);
+      }
+
+      // 1. Local file drop (Finder, or a browser's own download)
+      var files = e.dataTransfer.files;
+      var imageFiles = files && files.length ? Array.from(files).filter(function (f) { return f.type.startsWith("image/"); }) : [];
+      if (imageFiles.length) {
+        imageFiles.forEach(function (file) {
+          var reader = new FileReader();
+          reader.onload = function (ev) {
+            compressAndUploadImage(ev.target.result, 1400, 0.8, function (finalSrc, thumbSrc, tinySrc) {
+              addDroppedImage(finalSrc, thumbSrc, tinySrc);
+            }, true);
+          };
+          reader.readAsDataURL(file);
+        });
+        return;
+      }
+
+      // 2. Image dragged from another browser tab/page — URI list first
+      var uriList = e.dataTransfer.getData("text/uri-list");
+      if (uriList) {
+        var urls = uriList.split("\n").map(function (u) { return u.trim(); }).filter(function (u) { return u && !u.startsWith("#"); });
+        var addedFromUri = false;
+        urls.forEach(function (url) {
+          if (!/\.(png|jpg|jpeg|gif|webp|svg|avif)(\?.*)?$/i.test(url) && !url.startsWith("data:image")) return;
+          addedFromUri = true;
+          addDroppedImage(url);
+        });
+        if (addedFromUri) return;
+      }
+
+      // 3. HTML drop — extract img src from the dragged fragment
+      var html = e.dataTransfer.getData("text/html");
+      if (html) {
+        var div = document.createElement("div");
+        div.innerHTML = html;
+        var imgs = div.querySelectorAll("img");
+        imgs.forEach(function (imgEl) {
+          var src = imgEl.src || imgEl.getAttribute("src");
+          if (src) addDroppedImage(src);
+        });
+      }
+    });
   }
 
   function autoResizeTextarea(ta) {
@@ -9599,6 +9962,125 @@
       timeRow.appendChild(timeSep);
       timeRow.appendChild(endTimeInput);
       eventSection.appendChild(timeRow);
+
+      // --- Project row (Radar-style left-edge tab colour) ---
+      var projRow = document.createElement("div");
+      projRow.className = "event-project-row";
+
+      var projLabel = document.createElement("span");
+      projLabel.className = "event-project-label";
+      projLabel.textContent = "Project";
+      projRow.appendChild(projLabel);
+
+      function buildProjectBtn(key, label, colour) {
+        var btn = document.createElement("button");
+        btn.className = "event-project-btn" + (((card.project || null) === key) ? " selected" : "");
+        btn.style.setProperty("--proj-edge", colour);
+        btn.textContent = label;
+        btn.addEventListener("pointerdown", function (e) { e.stopPropagation(); });
+        btn.addEventListener("click", function () {
+          card.project = key;
+          projRow.querySelectorAll(".event-project-btn").forEach(function (b) { b.classList.remove("selected"); });
+          btn.classList.add("selected");
+          setModalMonthStripe(card);
+          saveBlocksToCard(card); saveState(); refreshCanvas();
+        });
+        return btn;
+      }
+
+      projRow.appendChild(buildProjectBtn(null, "None", EVENT_PROJECT_NONE_COLOR));
+      EVENT_PROJECTS.forEach(function (key) {
+        projRow.appendChild(buildProjectBtn(key, EVENT_PROJECT_LABELS[key], EVENT_PROJECT_COLORS[key]));
+      });
+      eventSection.appendChild(projRow);
+
+      // --- Firm row (how fixed the time is, Radar-style outline pills) ---
+      var firmRow = document.createElement("div");
+      firmRow.className = "event-firm-row";
+      var firmLabel = document.createElement("span");
+      firmLabel.className = "event-firm-label";
+      firmLabel.textContent = "Firm";
+      firmRow.appendChild(firmLabel);
+
+      function buildFirmBtn(key, label) {
+        var btn = document.createElement("button");
+        btn.className = "event-firm-btn" + (((card.firm || null) === key) ? " selected" : "");
+        btn.textContent = label;
+        btn.addEventListener("pointerdown", function (e) { e.stopPropagation(); });
+        btn.addEventListener("click", function () {
+          card.firm = (card.firm === key) ? null : key;
+          firmRow.querySelectorAll(".event-firm-btn").forEach(function (b) { b.classList.remove("selected"); });
+          if (card.firm === key) btn.classList.add("selected");
+          saveBlocksToCard(card); saveState(); refreshCanvas();
+        });
+        return btn;
+      }
+      EVENT_FIRM_OPTIONS.forEach(function (key) {
+        firmRow.appendChild(buildFirmBtn(key, EVENT_FIRM_LABELS[key]));
+      });
+      eventSection.appendChild(firmRow);
+
+      // --- Energy + duration row ---
+      var energyRow = document.createElement("div");
+      energyRow.className = "event-energy-row";
+      var energyLabel = document.createElement("span");
+      energyLabel.className = "event-energy-label";
+      energyLabel.textContent = "Energy";
+      energyRow.appendChild(energyLabel);
+
+      function buildEnergyBtn(key, label) {
+        var btn = document.createElement("button");
+        btn.className = "event-energy-btn" + (((card.energy || null) === key) ? " selected" : "");
+        btn.textContent = label;
+        btn.addEventListener("pointerdown", function (e) { e.stopPropagation(); });
+        btn.addEventListener("click", function () {
+          card.energy = (card.energy === key) ? null : key;
+          energyRow.querySelectorAll(".event-energy-btn").forEach(function (b) { b.classList.remove("selected"); });
+          if (card.energy === key) btn.classList.add("selected");
+          saveBlocksToCard(card); saveState(); refreshCanvas();
+        });
+        return btn;
+      }
+      EVENT_ENERGY_OPTIONS.forEach(function (key) {
+        energyRow.appendChild(buildEnergyBtn(key, EVENT_ENERGY_LABELS[key]));
+      });
+
+      var minsInput = document.createElement("input");
+      minsInput.type = "number";
+      minsInput.className = "event-mins-input";
+      minsInput.min = "0";
+      minsInput.step = "5";
+      minsInput.placeholder = "Mins";
+      minsInput.value = card.mins || "";
+      minsInput.addEventListener("pointerdown", function (e) { e.stopPropagation(); });
+      minsInput.addEventListener("change", function () {
+        var v = parseInt(minsInput.value, 10);
+        card.mins = (v && v > 0) ? v : null;
+        saveBlocksToCard(card); saveState(); refreshCanvas();
+      });
+      energyRow.appendChild(minsInput);
+      eventSection.appendChild(energyRow);
+
+      // --- Thread row (free text, matches Radar's thread label pill) ---
+      var threadRow = document.createElement("div");
+      threadRow.className = "event-thread-row";
+      var threadLabel = document.createElement("span");
+      threadLabel.className = "event-thread-label";
+      threadLabel.textContent = "Thread";
+      threadRow.appendChild(threadLabel);
+
+      var threadInput = document.createElement("input");
+      threadInput.type = "text";
+      threadInput.className = "event-thread-input";
+      threadInput.placeholder = "e.g. Media workshops";
+      threadInput.value = card.thread || "";
+      threadInput.addEventListener("pointerdown", function (e) { e.stopPropagation(); });
+      threadInput.addEventListener("change", function () {
+        card.thread = threadInput.value.trim() || null;
+        saveBlocksToCard(card); saveState(); refreshCanvas();
+      });
+      threadRow.appendChild(threadInput);
+      eventSection.appendChild(threadRow);
 
       container.appendChild(eventSection);
     }
@@ -10046,6 +10528,7 @@
         card.category = sw.dataset.cat;
         setModalMonthStripe(card);
         renderBlocksContainer(card);
+        refreshCanvas();
       }
     });
   });
@@ -10294,6 +10777,19 @@
     var isTimeline = group.viewMode === "timeline";
     var isCalendar = group.viewMode === "calendar";
     var isSpecialView = isTable || isTimeline || isCalendar;
+
+    // Correct any stale event-card heights up front, before the notebook layout reads
+    // them for row positions — otherwise rows momentarily use the old (bigger) height
+    // until the next re-render. Same rule renderCard itself applies: a body-empty event
+    // card always hugs exactly its content height.
+    (group.cardIds || []).forEach(function (id) {
+      var c = state.cards.filter(function (x) { return x.id === id; })[0];
+      if (!c || c.category !== "event") return;
+      var hasBody = (c.blocks && c.blocks.length) || (c.notes && c.notes.trim()) || (c.images && c.images.length);
+      if (hasBody) return;
+      c.height = estimateMinCardSize(c).minH;
+    });
+
     var layout = isTable ? computeTableLayout(group) : computeGroupLayout(group);
     var frameWidth = group.manualWidth
       ? group.manualWidth
@@ -13952,7 +14448,8 @@ const EGG_KINDS=["event","deadline","anchor"];
 const EC=(()=>{let x=0,y=0,n=0;for(const p of EGG.P)for(let i=0;i<p.length;i+=2){x+=p[i];y+=p[i+1];n++;}return[x/n,y/n];})();
 const dim=(y,m)=>new Date(y,m+1,0).getDate();
 const f1=n=>n.toFixed(1);
-const TL_ENTER=30, TL_EXIT=45, TL_MAXW=160; // unroll at 30 days on screen, roll back up past 45, widest day 160px
+const TL_ENTER=30, TL_EXIT=45, TL_MAXW=2200; // unroll at 30 days on screen, roll back up past 45, widest day 2200px (deep enough to read hours)
+function itFrac(it){ if(!it.start) return 0.5; const p=it.start.split(":"); const h=+p[0]||0, m=+p[1]||0; return (h+m/60)/24; } // time of day as a fraction of the day, for placing a timed item along its day once zoomed in past day level
 const TLG={ML:30, BAND:50, DW:72, DN:90, DOT:116, CARD:138, ROW:60, CH:52};
 const DNUM=s=>Math.round(Date.UTC(+s.slice(0,4),+s.slice(5,7)-1,+s.slice(8,10))/864e5);
 const DSTR=n=>{ const d=new Date(n*864e5); return `${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())}`; };
@@ -14098,7 +14595,7 @@ function feedDetail(id){ FEED=loadFeed(); const f=feedFind(id); if(!f) return; c
 function feedMakeCard(){ const id=FD&&FD.detail, f=id&&feedFind(id); if(!f) return; const {s,ev}=f;
   const rect=wrap.getBoundingClientRect(), cx=(rect.width/2-panX)/scale, cy=(rect.height/2-panY)/scale;
   const notes=[ev.allDay?"All day":`${ev.start}${ev.end?" to "+ev.end:""}`, ev.loc?("Location: "+ev.loc):"", "From "+feedLabel(s)].filter(Boolean).join("\n");
-  const card={id:uid(),title:ev.title,notes,category:"event",x:cx-130+(Math.random()-.5)*40,y:cy-39+(Math.random()-.5)*40,width:260,properties:{},z:getMaxZ()+1,startDate:ev.date,endDate:ev.endDate};
+  const card={id:uid(),title:ev.title,notes,category:"event",x:cx-130+(Math.random()-.5)*40,y:cy-39+(Math.random()-.5)*40,properties:{},z:getMaxZ()+1,startDate:ev.date,endDate:ev.endDate};
   state.cards.push(card); migrateCardToBlocks(card); saveState();
   const F=loadFeed(), fs=F.sources.find(x=>x.key===s.key); if(fs){ fs.made=fs.made||{}; fs.made[ev.k]=card.id; saveFeed(F); FEED=F; }
   refreshCanvas(); feedRefreshEggs();
@@ -14255,7 +14752,7 @@ function eggSVGcore(){
     const [x,yy]=pos; h+=`<text class="ml${eggMonth===m?" on":""}" data-eggm="${m}" x="${f1(x)}" y="${f1(yy)}" text-anchor="middle" dominant-baseline="middle">${MN[m]}</text>`; }
   h+=`<text class="et" x="${f1(EC[0])}" y="${f1(EC[1]-4)}" text-anchor="middle">${y}</text><text class="es" x="${f1(EC[0])}" y="${f1(EC[1]+18)}" text-anchor="middle">${items.length} dated</text>`;
   if (isNow){ const [bx,by]=eggPos(t,-12*k); const [ix,iy]=eggPos(t,62*k); const [lx,ly]=eggPos(t,-54*k);
-    h+=`<line class="tdline" x1="${f1(ix)}" y1="${f1(iy)}" x2="${f1(bx)}" y2="${f1(by)}"/><circle class="tddot" cx="${f1(bx)}" cy="${f1(by)}" r="${f1(3.5*k)}"/><text class="tdl" x="${f1(lx)}" y="${f1(ly)}" text-anchor="middle" dominant-baseline="middle">TODAY · ${esc(fday(t).toUpperCase())}</text>`; }
+    h+=`<g class="tdhit" tabindex="0" role="button" aria-label="Zoom to today"><line class="tdhitzone" x1="${f1(ix)}" y1="${f1(iy)}" x2="${f1(lx)}" y2="${f1(ly)}" stroke="transparent" stroke-width="${f1(30*k)}" stroke-linecap="round"/><line class="tdline" x1="${f1(ix)}" y1="${f1(iy)}" x2="${f1(bx)}" y2="${f1(by)}"/><circle class="tddot" cx="${f1(bx)}" cy="${f1(by)}" r="${f1(3.5*k)}"/><text class="tdl" x="${f1(lx)}" y="${f1(ly)}" text-anchor="middle" dominant-baseline="middle">TODAY · ${esc(fday(t).toUpperCase())}</text><title>Zoom to today</title></g>`; }
   const placed=[], rangePts=[], titles=[], tboxes=[];
   const cands=[]; const addTitle=(it,x,yy)=>{ if(DETAIL) cands.push([it,x,yy]); };
   const placeTitles=()=>{ // titles go right of the marker, else left; never over another title or another marker
@@ -14323,7 +14820,7 @@ const tlW=()=>Math.max(280,(tlWrap()?.clientWidth)||fbSize()[0]);
 const tlEW=()=>eggFull?tlW():Math.min(tlW(),640);
 const tlMinEnter=()=>Math.max(tlW()/TL_ENTER,22), tlMinExit=()=>Math.max(tlW()/TL_EXIT,15); // phones need wider days
 function eggSVG(){ return TL.mode==="egg" ? eggSVGcore() : tlFrame(TL.mode==="line"?1:TL.u); }
-function eggZL(){ return TL.mode!=="egg" ? `${Math.round(tlW()/TL.dayW)} days` : (eggView.z>1?`×${eggView.z.toFixed(1)}`:"Whole year"); }
+function eggZL(){ if (TL.mode!=="egg"){ const d=tlW()/TL.dayW; return d<1?`${Math.round(d*24)} hours`:`${Math.round(d)} days`; } return eggView.z>1?`×${eggView.z.toFixed(1)}`:"Whole year"; }
 function eggLpd(n){ const a=eggPos(DSTR(n-1),0), b=eggPos(DSTR(n+1),0); return Math.hypot(b[0]-a[0],b[1]-a[1])/2; } // egg units per day
 function eggNearestDay(p){ const n0=DNUM(`${eggYear}-01-01`), n1=DNUM(`${eggYear}-12-31`); let best=n0, bd=1e9;
   for (let n=n0;n<=n1;n++){ const q=eggPos(DSTR(n),0), d=Math.hypot(q[0]-p[0],q[1]-p[1]); if(d<bd){bd=d;best=n;} } return best; }
@@ -14409,6 +14906,7 @@ function tlMove(e){
   if (!eggDragged) return;
   TL.x0=tlDown[1]-dx/TL.dayW; eggRedraw();
 }
+const CARD_GAP=14; // fixed pixel offset from a card's left edge to its marker/stem, so they never drift apart at any zoom (Dan, 27 Sep, ported from Radar)
 function tlLayout(dW){ // single days: cards packed into rows, as in the Canvas timeline. Runs of days: labelled bars in lanes above the dots
   const ends=[], cards=[], lends=[], runs=[];
   for (const it of tlItems()){
@@ -14416,9 +14914,10 @@ function tlLayout(dW){ // single days: cards packed into rows, as in the Canvas 
     if (e>s){ const lw=tt.w+12+dt.length*8, x1=Math.max((e+1)*dW, ax+lw);
       let l=lends.findIndex(x=>x<=ax-12); if (l<0){ l=lends.length; lends.push(0); } lends[l]=x1;
       runs.push({it,s,e,l,lw,tt,dt}); continue; }
+    const hb=clamp01((dW-100)/200), tf=0.5+hb*(itFrac(it)-0.5), cax=(s+tf)*dW-CARD_GAP;
     const w=Math.min(300,Math.max(110,tt.w+30,dt.length*8+30));
-    let r=ends.findIndex(x=>x<=ax-10); if (r<0){ r=ends.length; ends.push(0); } ends[r]=ax+w;
-    cards.push({it,s,e,ax,w,r,tt,dt}); }
+    let r=ends.findIndex(x=>x<=cax-10); if (r<0){ r=ends.length; ends.push(0); } ends[r]=cax+w;
+    cards.push({it,s,e,ax:cax,w,r,tt,dt,tf}); }
   const dot=TLG.DOT+lends.length*TL_LANE;
   return {cards,runs,rows:ends.length,lanes:lends.length,dot,card:dot+22};
 }
@@ -14449,6 +14948,11 @@ function tlFrame(u){ // u=0 is the egg as it stands, u=1 is the timeline
   if (oe>0){
     // day ticks across the band, Mondays heavier
     let g=""; if (dW>=6) for (let n=n0;n<=n1;n++){ const mon=new Date(n*864e5).getUTCDay()===1; g+=`<line class="dtick${mon?" wk":""}" x1="${f1(X(n))}" y1="${TLG.BAND-6}" x2="${f1(X(n))}" y2="${TLG.BAND+6}"/>`; }
+    // hour ticks, once zoomed in past a day or so on screen
+    if (dW>=150) for (let n=n0;n<=n1;n++){ const step=dW>=1400?1:dW>=700?2:dW>=350?3:6;
+      for (let hh=step; hh<24; hh+=step){ const x=f1(X(n+hh/24)), noon=hh===12;
+        g+=`<line class="htick${noon?" noon":""}" x1="${x}" y1="${TLG.BAND-4}" x2="${x}" y2="${TLG.BAND+4}"/>`;
+        if (dW>=350) g+=`<text class="htl${noon?" noon":""}" x="${x}" y="104" text-anchor="middle">${dW>=900?`${pad(hh)}:00`:hh}</text>`; } }
     // month names ride along the top and stay in view while their month is on screen
     for (let n=n0; n<=n1;){ const d=new Date(n*864e5), y=d.getUTCFullYear(), m=d.getUTCMonth(), ms=DNUM(`${y}-${pad(m+1)}-01`), me=ms+dim(y,m), a0=Math.max(X(ms),0)+10, a1=X(me)-10;
       let nm=MFULL[m].toUpperCase(), w=tlMeasure(nm,'800 18px "Encode Sans Semi Condensed","Arial Narrow",sans-serif')+nm.length*0.72, yw=40;
@@ -14468,15 +14972,21 @@ function tlFrame(u){ // u=0 is the egg as it stands, u=1 is the timeline
     if (xe<-20 || xs>Wt+20) continue;
     const top=TLG.DOT-10+r.l*TL_LANE-(1-oe)*10, lx=xs>=8?xs:Math.min(8,xe-r.tt.w-4), showD=lx+r.lw<=Math.max(xe,xs+r.lw)+1; // title stays on screen while any of the bar is; the dates drop off rather than run into the next bar
     runs+=`<g class="tlrun ${cls}" data-eggid="${esc(it.id)}" tabindex="0" role="button" aria-label="${esc(it.title)}, ${esc(r.dt)}" opacity="${op}"><rect class="tlhit" x="${f1(Math.min(xs,lx))}" y="${f1(top)}" width="${f1(Math.max(xe,lx+r.lw)-Math.min(xs,lx))}" height="40"/><text class="tlt" x="${f1(lx)}" y="${f1(top+17)}">${esc(r.tt.s)}</text>${showD?`<text class="tld" x="${f1(lx+r.tt.w+12)}" y="${f1(top+17)}">${esc(r.dt)}</text>`:""}<rect class="tlrg" x="${f1(xs+2)}" y="${f1(top+25)}" width="${f1(Math.max(10,xe-xs-4))}" height="11" rx="5.5"/><title>${esc(it.title)}</title></g>`; }
-  // single days: cards hang on stems from the dots; the dots fly from their places on the egg
-  for (const c of L.cards){ const it=c.it, cls=`c-${esc(it.project)}${it.status==="done"?" done":""}`, id=esc(it.id), xd=X(c.s+0.5), xc=c.ax-x0*dW, r0=it.kind==="deadline"?7.5:6.5;
-    const onScr=xc+c.w>-40 && xc<Wt+40, pe=e&&e.marks.get(it.id);
-    if (pe){ const p=M(pe,[xd,L.dot]); marks+=`<g class="mk ${cls}${it.kind==="deadline"?" dl":""}" data-eggid="${id}"><circle cx="${f1(p[0])}" cy="${f1(p[1])}" r="${f1(lerp(r0*e.s/e.view.z,r0,u))}"/></g>`; }
-    else if (onScr && oe>0) marks+=`<g class="mk ${cls}${it.kind==="deadline"?" dl":""}" data-eggid="${id}" opacity="${op}"><circle cx="${f1(xd)}" cy="${L.dot}" r="${r0}"/></g>`;
-    if (!onScr || oe<=0) continue;
-    const top=L.card+c.r*TLG.ROW-(1-oe)*14;
-    stems+=`<line class="tlst ${cls}" x1="${f1(xd)}" y1="${L.dot+6}" x2="${f1(xd)}" y2="${f1(lerp(L.dot+6,top,oe))}" opacity="${op}"/>`;
-    cards+=`<g class="tlc ${cls}" data-eggid="${id}" tabindex="0" role="button" aria-label="${esc(it.title)}, ${esc(fday(it.date))}" opacity="${op}" transform="translate(${f1(xc)} ${f1(top)})"><rect class="tlcb" width="${f1(c.w)}" height="${TLG.CH}" rx="5" filter="url(#tlsh)"/><path class="tlct" d="M5 0H9V${TLG.CH}H5A5 5 0 0 1 0 ${TLG.CH-5}V5A5 5 0 0 1 5 0Z"/><text class="tlt" x="18" y="22">${esc(c.tt.s)}</text><text class="tld" x="18" y="41">${esc(c.dt)}</text><title>${esc(it.title)}</title></g>`;
+  // single days: cards hang on stems from the dots; the dots fly from their places on the egg. Cards that fall on the same moment share one trunk, fanned into separate coloured dots so each project still shows (Dan, 27 Sep, ported from Radar)
+  const dayBuckets=new Map();
+  for (const c of L.cards){ const xc=c.ax-x0*dW; if (!(xc+c.w>-40 && xc<Wt+40)) continue;
+    const xd=xc+CARD_GAP, key=Math.round(xd);
+    let b=dayBuckets.get(key); if(!b){ b=[]; dayBuckets.set(key,b); } b.push({c,xd}); }
+  for (const grp of dayBuckets.values()){ const multi=grp.length>1;
+    grp.forEach((bc,i)=>{ const c=bc.c, it=c.it, cls=`c-${esc(it.project)}${it.status==="done"?" done":""}`, id=esc(it.id), xc=c.ax-x0*dW, r0=it.kind==="deadline"?7.5:6.5;
+      const mx=multi?bc.xd+(i-(grp.length-1)/2)*14:bc.xd, pe=e&&e.marks.get(it.id);
+      if (pe){ const p=M(pe,[mx,L.dot]); marks+=`<g class="mk ${cls}${it.kind==="deadline"?" dl":""}" data-eggid="${id}"><circle cx="${f1(p[0])}" cy="${f1(p[1])}" r="${f1(lerp(r0*e.s/e.view.z,r0,u))}"/></g>`; }
+      else if (oe>0) marks+=`<g class="mk ${cls}${it.kind==="deadline"?" dl":""}" data-eggid="${id}" opacity="${op}"><circle cx="${f1(mx)}" cy="${L.dot}" r="${r0}"/></g>`;
+      if (oe<=0) return;
+      const top=L.card+c.r*TLG.ROW-(1-oe)*14;
+      stems+=`<line class="tlst ${multi?"multi":cls}" data-eggid="${id}" x1="${f1(bc.xd)}" y1="${L.dot+6}" x2="${f1(bc.xd)}" y2="${f1(lerp(L.dot+6,top,oe))}" opacity="${op}"/>`;
+      cards+=`<g class="tlc ${cls}" data-eggid="${id}" tabindex="0" role="button" aria-label="${esc(it.title)}, ${esc(fday(it.date))}" opacity="${op}" transform="translate(${f1(xc)} ${f1(top)})"><rect class="tlcb" width="${f1(c.w)}" height="${TLG.CH}" rx="5" filter="url(#tlsh)"/><path class="tlct" d="M5 0H9V${TLG.CH}H5A5 5 0 0 1 0 ${TLG.CH-5}V5A5 5 0 0 1 5 0Z"/><text class="tlt" x="18" y="22">${esc(c.tt.s)}</text><text class="tld" x="18" y="41">${esc(c.dt)}</text><title>${esc(it.title)}</title></g>`;
+    });
   }
   // keep the side list and year on the month in the middle of the timeline
   if (u===1){ const cd=new Date(Math.floor(x0+Wt/2/dW)*864e5), cm=cd.getUTCMonth(), cy=cd.getUTCFullYear();
@@ -14491,9 +15001,9 @@ function tlFrame(u){ // u=0 is the egg as it stands, u=1 is the timeline
   function dynCss(){ let s=document.getElementById("ye-dyn"); if(!s){ s=document.createElement("style"); s.id="ye-dyn"; document.head.appendChild(s); }
     s.textContent=[...stacks().values()].map(v=>`.yeroot .c-${v.cls}{--c:${v.colour}}`).join("\n")+`\n.yeroot .c-bd{--c:${BDAY}}`+FEED.sources.map((v,i)=>`\n.yeroot .c-f${i}{--c:${v.colour}}`).join(""); }
   function viewHTML(){ const y=eggYear, f=EGGOBJ.stackFilters||{};
-    const chips=[...stacks().values()].map(s=>`<button class="eggchip" style="--c:${s.colour}" data-eggp="${esc(s.key)}" aria-pressed="${f[s.key]!==false}">${esc(s.label)}</button>`).join("")
-      +FEED.sources.filter(s=>s.events.length).map(s=>`<button class="eggchip" style="--c:${s.colour}" data-eggp="${esc("f:"+s.key)}" aria-pressed="${(EGGOBJ.feedFilters||{})[s.key]!==false}">${esc(feedLabel(s))}</button>`).join("")
-      +`<span class="bdwrap"><button class="eggchip" style="--c:${BDAY}" data-eggp="__bday__" aria-pressed="${EGGOBJ.showBirthdays!==false}">Birthdays</button><button class="bdplus" style="--c:${BDAY}" data-eggbday aria-label="Add or edit birthdays" title="Add or edit birthdays">+</button></span>`
+    const chips=[...stacks().values()].map(s=>`<button class="eggchip" style="--c:${s.colour}" data-eggp="${esc(s.key)}" aria-pressed="${f[s.key]!==false}"><i></i>${esc(s.label)}</button>`).join("")
+      +FEED.sources.filter(s=>s.events.length).map(s=>`<button class="eggchip" style="--c:${s.colour}" data-eggp="${esc("f:"+s.key)}" aria-pressed="${(EGGOBJ.feedFilters||{})[s.key]!==false}"><i></i>${esc(feedLabel(s))}</button>`).join("")
+      +`<span class="bdwrap"><button class="eggchip" style="--c:${BDAY}" data-eggp="__bday__" aria-pressed="${EGGOBJ.showBirthdays!==false}"><i></i>Birthdays</button><button class="bdplus" style="--c:${BDAY}" data-eggbday aria-label="Add or edit birthdays" title="Add or edit birthdays">+</button></span>`
       +`<button class="yebtn" data-eggimport>Import calendar</button><button class="yebtn" data-eggexport>Copy for Radar</button>`;
     const zoom=`<span class="zoomctl"><button class="yebtn" data-eggz="out" aria-label="Zoom out">−</button><button class="yebtn" data-eggz="in" aria-label="Zoom in">+</button><button class="yebtn" data-eggz="fit">Fit</button><span class="zl">${eggZL()}</span></span>`;
     const yr=`<button class="yebtn" data-eggy="-1" aria-label="Previous year">◀</button><b>${y}</b><button class="yebtn" data-eggy="1" aria-label="Next year">▶</button>${y!==new Date().getFullYear()?`<button class="yebtn" data-eggy="0">${full?"This year":"Today"}</button>`:""}`;
@@ -14501,7 +15011,7 @@ function tlFrame(u){ // u=0 is the egg as it stands, u=1 is the timeline
       ? `<div class="eggbar"><div class="yr">${yr}${zoom}<button class="yebtn close" data-yeclose>Close</button></div><div class="eggchips">${chips}</div></div>`
       : `<div class="eggbar"><div class="yr">${yr}</div><span class="barend"><button class="yebtn" data-yefilt aria-pressed="${showChips}">Filter</button><button class="yebtn" data-yefull title="Open the big view">Full screen</button></span>${zoom}</div>${showChips?`<div class="eggchips cardchips">${chips}</div>`:""}`;
     return bar + `<div class="eggwrap">${eggSVG()}</div>`
-      + (full ? `<div class="eggkey"><b>Zoom:</b> tap a month name to fly to it, tap the band to zoom round that date (tap again to unroll it into a timeline), double-tap for the whole year. Scroll or pinch to zoom, drag to move. Zoom in past about a month and the egg unrolls into a timeline; zoom back out to roll it up. Tap a marker to open its card.</div>` : ""); }
+      + (full ? `<div class="eggkey"><b>Zoom:</b> tap a month name to fly to it, tap the band to zoom round that date (tap again to unroll it into a timeline), double-tap to step out through Day, Week, Month, Year. Scroll or pinch to zoom, drag to move. Zoom in past about a month and the egg unrolls into a timeline; zoom back out, or double-tap, to roll it up. Tap a marker to open its card.</div>` : ""); }
   function render(){ if(!root) return; dynCss(); root.innerHTML=viewHTML(); eggRedraw(); }
 
   /* ---- events, bound to this egg's own root so several eggs and the board never fight ---- */
@@ -14523,9 +15033,21 @@ function tlFrame(u){ // u=0 is the egg as it stands, u=1 is the timeline
       cancelAnimationFrame(eggAnimR); eggPtrs.set(e.pointerId,[e.clientX,e.clientY]); eggDragged=false; eggDown=[e.clientX,e.clientY,eggView.cx,eggView.cy]; tlDown=TL.mode==="line"?[e.clientX,TL.x0]:null; tlPinch=null;
       if (eggPtrs.size===2){ const [a,b]=[...eggPtrs.values()]; eggPinch={d:Math.hypot(a[0]-b[0],a[1]-b[1]),z:eggView.z}; try{ w.setPointerCapture(e.pointerId); }catch(_){} } }); /* capture only for pinch and drag, so taps still reach month names, band and markers */
     root.addEventListener("dblclick", e=>{ const w=wrapEl(); if(!w||!w.contains(e.target) || e.target.closest("[data-eggid]")) return; e.preventDefault(); clearTimeout(eggTapT);
-      if (TL.mode==="line"){ tlLeave(true); return; } if (TL.mode!=="egg") return; eggAnimTo(1,eggView.cx,eggView.cy); });
-    root.addEventListener("keydown", e=>{ if ((e.key==="Enter"||e.key===" ") && e.target.closest?.("[data-eggid]")){ e.preventDefault(); openMarker(e.target.closest("[data-eggid]")); } });
+      if (TL.mode==="line"){
+        const Wt=tlW(), d=Wt/TL.dayW; // days currently shown on screen
+        if (d<=Math.sqrt(7)){ const c=TL.x0+Wt/2/TL.dayW, w1=Math.min(TL_MAXW,Math.max(Wt/7,tlMinExit())); tlAnimLine(c,w1); return; } // Day -> Week
+        const dC=Math.floor(TL.x0+Wt/2/TL.dayW), m=new Date(dC*864e5).getUTCMonth(); tlLeave(false); setTimeout(()=>eggZoomMonth(m),60); return; // Week -> Month
+      }
+      if (TL.mode!=="egg") return;
+      eggAnimTo(1,eggView.cx,eggView.cy); // Month -> Year (also a no-op if already at Year)
+    }); /* double-click: step out through the fixed Day > Week > Month > Year stops only (Dan, 27 Sep, ported from Radar) */
+    root.addEventListener("keydown", e=>{ if ((e.key==="Enter"||e.key===" ") && e.target.closest?.(".tdhit")){ e.preventDefault(); tlEnter(DNUM(today()), tlW()); return; } if ((e.key==="Enter"||e.key===" ") && e.target.closest?.("[data-eggid]")){ e.preventDefault(); openMarker(e.target.closest("[data-eggid]")); } });
+    // v30: hovering a card, marker or stem highlights the matching ones too, so it's clear which stem goes with which
+    function eggHL(id,on){ root.querySelectorAll(`[data-eggid="${CSS.escape(id)}"]`).forEach(el=>el.classList.toggle("hl",on)); }
+    root.addEventListener("pointerover", e=>{ const t=e.target.closest("[data-eggid]"); if(!t) return; const id=t.dataset.eggid; if(id) eggHL(id,true); });
+    root.addEventListener("pointerout", e=>{ const t=e.target.closest("[data-eggid]"); if(!t) return; const id=t.dataset.eggid; if(id) eggHL(id,false); });
     root.addEventListener("click", e=>{ const t=e.target;
+      const td=t.closest(".tdhit"); if (td){ tlEnter(DNUM(today()), tlW()); return; }
       if (t.closest("[data-yeclose]")){ closeOverlay(); return; }
       if (t.closest("[data-yefull]")){ openOverlay(EGGOBJ); return; }
       if (t.closest("[data-yefilt]")){ showChips=!showChips; render(); return; }
