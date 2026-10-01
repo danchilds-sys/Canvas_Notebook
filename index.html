@@ -618,6 +618,10 @@
   }
   .video-item.is-dragging .video-item-drag-shield { cursor: grabbing; }
   .video-item.selected { outline: 2px solid #4A90E2; outline-offset: 2px; }
+  /* v80: inline YouTube player */
+  .yt-inline-frame { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: block; background: #000; z-index: 3; }
+  .video-item.is-dragging .yt-inline-frame { pointer-events: none; }
+  .yt-card-preview-frame { position: relative; width: 100%; padding-bottom: 56.25%; }
   .video-embed-error {
     position: absolute; inset: 0; display: flex; flex-direction: column;
     align-items: center; justify-content: center; gap: 10px;
@@ -7421,6 +7425,15 @@ body.focus-mode #bar-tools{max-width:0 !important;opacity:0 !important}
           playBadge.innerHTML = '<svg viewBox="0 0 24 24" width="28" height="28" fill="white" opacity="0.9"><polygon points="5,3 19,12 5,21"/></svg>';
           vidThumbWrap.appendChild(vidThumb);
           vidThumbWrap.appendChild(playBadge);
+          if (ytCanEmbed()) {
+            playBadge.style.cursor = "pointer";
+            playBadge.addEventListener("pointerdown", function (e) { e.stopPropagation(); });
+            playBadge.addEventListener("click", function (e) {
+              e.stopPropagation();
+              vidThumbWrap.style.aspectRatio = "16 / 9";
+              ytPlayInline(vidThumbWrap, block.videoId, [vidThumb, playBadge]);
+            });
+          }
           preview.appendChild(vidThumbWrap);
         } else if (block.type === "contact") {
           var cWrap = document.createElement("div");
@@ -14530,6 +14543,32 @@ body.focus-mode #bar-tools{max-width:0 !important;opacity:0 !important}
     return "https://www.youtube.com/embed/" + videoId + "?rel=0&modestbranding=1&enablejsapi=1";
   }
 
+  /* v80: inline playback. YouTube refuses embeds from file:// pages (error 153),
+     so when Canvas is opened as a local file we keep the old open-in-YouTube behaviour. */
+  var ytActive = null; // { box, restore }
+  function ytCanEmbed() { return location.protocol === "http:" || location.protocol === "https:"; }
+  function ytStopActive() {
+    if (ytActive) { try { ytActive.restore(); } catch (e) {} ytActive = null; }
+  }
+  function ytPlayInline(box, videoId, hideEls) {
+    if (!ytCanEmbed()) { window.open("https://www.youtube.com/watch?v=" + videoId, "_blank", "noopener"); return; }
+    if (box.querySelector(".yt-inline-frame")) return;
+    ytStopActive();
+    var frame = document.createElement("iframe");
+    frame.className = "yt-inline-frame";
+    frame.src = "https://www.youtube.com/embed/" + videoId + "?autoplay=1&rel=0&modestbranding=1&playsinline=1";
+    frame.allow = "autoplay; encrypted-media; picture-in-picture; fullscreen";
+    frame.allowFullscreen = true;
+    frame.referrerPolicy = "strict-origin-when-cross-origin";
+    frame.title = "YouTube video player";
+    (hideEls || []).forEach(function (h) { h.style.visibility = "hidden"; });
+    box.appendChild(frame);
+    ytActive = { box: box, restore: function () {
+      if (frame.parentNode) frame.parentNode.removeChild(frame);
+      (hideEls || []).forEach(function (h) { h.style.visibility = ""; });
+    } };
+  }
+
   function fetchYouTubeTitle(videoId, cb) {
     var url = "https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=" + videoId + "&format=json";
     fetch(url).then(function (r) { return r.json(); }).then(function (d) { cb(d.title || ""); }).catch(function () { cb(""); });
@@ -14608,7 +14647,7 @@ body.focus-mode #bar-tools{max-width:0 !important;opacity:0 !important}
 
     embedDiv.addEventListener("click", function (e) {
       e.stopPropagation();
-      window.open("https://www.youtube.com/watch?v=" + video.videoId, "_blank", "noopener");
+      ytPlayInline(embedDiv, video.videoId, [thumb, playOverlay]);
     });
     el.appendChild(embedDiv);
 
@@ -14622,6 +14661,17 @@ body.focus-mode #bar-tools{max-width:0 !important;opacity:0 !important}
     addConnectionDots(el, video.id);
 
     itemsLayer.appendChild(el);
+
+    /* v80: dragging captures the pointer on the item, which retargets the click away from the
+       embed area, so catch the click here and check where it landed. */
+    el.addEventListener("click", function (e) {
+      if (el.dataset.justDragged === "1") { el.dataset.justDragged = "0"; return; }
+      if (e.target.closest(".video-item-toolbar, .resize-handle, .yt-inline-frame")) return;
+      var r = embedDiv.getBoundingClientRect();
+      if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) {
+        ytPlayInline(embedDiv, video.videoId, [thumb, playOverlay]);
+      }
+    });
 
     el.addEventListener("pointerdown", function () {
       if (!selectedVideoIds.has(video.id)) {
@@ -14730,8 +14780,9 @@ body.focus-mode #bar-tools{max-width:0 !important;opacity:0 !important}
       playBtn.innerHTML = '<svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>';
       playOverlay.appendChild(playBtn);
       embedWrap.appendChild(playOverlay);
-      embedWrap.addEventListener("click", function () {
-        window.open("https://www.youtube.com/watch?v=" + block.videoId, "_blank", "noopener");
+      embedWrap.addEventListener("click", function (e) {
+        e.stopPropagation();
+        ytPlayInline(embedWrap, block.videoId, [thumb, playOverlay]);
       });
       inner.appendChild(embedWrap);
     }
